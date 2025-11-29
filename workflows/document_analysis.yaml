@@ -1,0 +1,63 @@
+name: document_analysis
+description: Analyze a document for sentiment, facts, and quality
+version: "1.0"
+
+inputs:
+  document: string
+
+outputs:
+  - sentiment
+  - quality_score
+  - summary
+
+steps:
+  - name: analyze_sentiment
+    action: llm_complete
+    params:
+      model: gpt-4o-mini
+      messages:
+        - role: system
+          content: "Analyze the sentiment of the following text. Return: POSITIVE, NEGATIVE, or NEUTRAL"
+        - role: user
+          content: "{{document}}"
+
+  - name: assess_quality
+    action: llm_complete
+    params:
+      model: gpt-4o-mini
+      messages:
+        - role: system
+          content: "Rate the quality of this text from 1-10 and explain why."
+        - role: user
+          content: "{{document}}"
+
+  - name: summarize
+    action: llm_complete
+    params:
+      model: gpt-4o-mini
+      messages:
+        - role: system
+          content: "Provide a concise summary of the following document in 2-3 sentences."
+        - role: user
+          content: "{{document}}"
+
+  - name: set_sentiment
+    action: set_variable
+    params:
+      name: sentiment
+      value: "{{analyze_sentiment.content}}"
+
+  - name: set_quality
+    action: set_variable
+    params:
+      name: quality_score
+      value: "{{assess_quality.content}}"
+
+  - name: set_summary
+    action: set_variable
+    params:
+      name: summary
+      value: "{{summarize.content}}"
+
+on_error: continue
+

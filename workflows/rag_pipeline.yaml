@@ -1,0 +1,57 @@
+name: rag_pipeline
+description: Retrieval-Augmented Generation pipeline
+version: "1.0"
+
+inputs:
+  query: string
+  top_k: 5
+
+outputs:
+  - answer
+  - sources
+
+steps:
+  - name: retrieve_context
+    action: vector_search
+    params:
+      query: "{{query}}"
+      top_k: "{{top_k}}"
+
+  - name: log_retrieval
+    action: log
+    params:
+      message: "Retrieved {{retrieve_context.results.length}} documents"
+      level: info
+
+  - name: generate_answer
+    action: llm_complete
+    params:
+      model: gpt-4o-mini
+      messages:
+        - role: system
+          content: |
+            You are a helpful assistant. Answer the user's question based on the provided context.
+            If the context doesn't contain relevant information, say so.
+        - role: user
+          content: |
+            Context:
+            {{retrieve_context.results}}
+            
+            Question: {{query}}
+            
+            Answer:
+
+  - name: set_answer
+    action: set_variable
+    params:
+      name: answer
+      value: "{{generate_answer.content}}"
+
+  - name: set_sources
+    action: set_variable
+    params:
+      name: sources
+      value: "{{retrieve_context.results}}"
+
+on_error: fail
+

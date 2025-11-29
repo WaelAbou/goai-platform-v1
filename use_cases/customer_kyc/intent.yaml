@@ -1,0 +1,108 @@
+# Customer KYC Use Case
+# Know Your Customer - Document Verification & Risk Assessment
+#
+# Following GoAI Standard Development Cycle
+
+use_case:
+  name: "Customer KYC"
+  id: "customer-kyc"
+  version: "1.0.0"
+  
+  # Business context
+  business_owner: "Compliance & Risk Management"
+  technical_owner: "platform-team@company.com"
+  
+  # Problem statement
+  problem: |
+    Manual KYC verification is time-consuming (15-30 minutes per customer),
+    error-prone, and creates bottlenecks in customer onboarding.
+    Compliance officers need to verify identity documents, assess risk levels,
+    and ensure regulatory compliance across multiple jurisdictions.
+    
+  # Solution
+  solution: |
+    AI-powered KYC system that:
+    1. Extracts and validates information from ID documents
+    2. Performs risk assessment based on customer data
+    3. Checks against compliance rules and watchlists
+    4. Generates verification reports with confidence scores
+    5. Flags high-risk cases for human review
+    
+  # Success metrics
+  success_metrics:
+    - metric: "Average verification time"
+      baseline: "20 minutes"
+      target: "2 minutes"
+    - metric: "Accuracy rate"
+      baseline: "85%"
+      target: "95%"
+    - metric: "False positive rate"
+      baseline: "15%"
+      target: "5%"
+    - metric: "Compliance audit pass rate"
+      baseline: "90%"
+      target: "99%"
+      
+  # Scope
+  in_scope:
+    - ID document extraction (passport, driver's license, national ID)
+    - Address proof verification
+    - Risk level assessment (low, medium, high)
+    - PEP (Politically Exposed Person) screening simulation
+    - Sanctions list check simulation
+    - Verification report generation
+    - Audit trail logging
+    
+  out_of_scope:
+    - Real-time watchlist API integration (simulated)
+    - Biometric verification
+    - Video KYC
+    - Third-party data provider integration
+    
+  # Dependencies
+  dependencies:
+    core_modules:
+      - llm_router
+      - vector_store
+      - streaming_engine
+      - auth_service
+    data_sources:
+      - name: "Customer Documents"
+        type: "PDF, JPEG, PNG"
+        volume: "~1000 verifications/day"
+      - name: "Compliance Rules"
+        type: "YAML configuration"
+        
+  # Compliance requirements
+  compliance:
+    regulations:
+      - "AML (Anti-Money Laundering)"
+      - "KYC Guidelines"
+      - "GDPR (Data Protection)"
+    data_retention: "7 years"
+    audit_requirements: "Full audit trail required"
+    
+  # Risk classification
+  risk_levels:
+    low:
+      description: "Standard customer, all documents valid"
+      action: "Auto-approve"
+    medium:
+      description: "Minor discrepancies or incomplete data"
+      action: "Manual review within 24h"
+    high:
+      description: "PEP match, sanctions concern, or major issues"
+      action: "Escalate to compliance officer immediately"
+      
+  # Timeline
+  timeline:
+    start_date: "2025-01-15"
+    target_date: "2025-01-17"
+    phases:
+      - phase: "Development"
+        duration: "1 day"
+      - phase: "Testing"
+        duration: "1 day"
+      - phase: "Deployment"
+        duration: "0.5 day"
+

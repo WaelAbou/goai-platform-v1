@@ -1,0 +1,246 @@
+# Customer KYC Verification Workflow
+# Orchestrated verification process with decision gates
+
+name: customer_kyc_verification
+description: End-to-end KYC verification workflow
+version: "1.0.0"
+
+# Workflow configuration
+config:
+  timeout_minutes: 10
+  retry_on_failure: true
+  max_retries: 2
+  parallel_enabled: true
+  
+# Input schema
+input:
+  customer:
+    type: object
+    required: true
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      date_of_birth:
+        type: date
+      nationality:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      address:
+        type: string
+  documents:
+    type: array
+    min_items: 1
+    required: true
+    items:
+      type: object
+      properties:
+        document_type:
+          type: string
+          enum: [passport, drivers_license, national_id, proof_of_address, utility_bill, bank_statement]
+        content:
+          type: string
+
+# Workflow steps
+steps:
+  # Step 1: Document Validation (parallel for all documents)
+  - id: validate_documents
+    name: "Document Validation"
+    action: kyc.validate_documents
+    parallel: true  # Process all documents in parallel
+    input:
+      documents: "{{ input.documents }}"
+    output:
+      document_results: "{{ result }}"
+    on_error: abort_with_message
+    
+  # Step 2: Identity Verification
+  - id: verify_identity
+    name: "Identity Verification"
+    action: kyc.verify_identity
+    depends_on: [validate_documents]
+    input:
+      customer: "{{ input.customer }}"
+      documents: "{{ steps.validate_documents.document_results }}"
+    output:
+      identity_verified: "{{ result.verified }}"
+      identity_confidence: "{{ result.confidence }}"
+    condition: "{{ steps.validate_documents.document_results | has_valid_id }}"
+    
+  # Step 3: PEP & Sanctions Screening
+  - id: screening
+    name: "PEP & Sanctions Screening"
+    action: kyc.screen_customer
+    depends_on: [verify_identity]
+    input:
+      customer_name: "{{ input.customer.first_name }} {{ input.customer.last_name }}"
+      nationality: "{{ input.customer.nationality }}"
+      date_of_birth: "{{ input.customer.date_of_birth }}"
+    output:
+      pep_match: "{{ result.pep_match }}"
+      sanctions_match: "{{ result.sanctions_match }}"
+      screening_passed: "{{ result.passed }}"
+      
+  # Step 4: Risk Assessment
+  - id: risk_assessment
+    name: "Risk Assessment"
+    action: kyc.assess_risk
+    depends_on: [validate_documents, verify_identity, screening]
+    input:
+      customer: "{{ input.customer }}"
+      document_results: "{{ steps.validate_documents.document_results }}"
+      identity_confidence: "{{ steps.verify_identity.identity_confidence }}"
+      screening_result: "{{ steps.screening }}"
+    output:
+      risk_level: "{{ result.risk_level }}"
+      risk_score: "{{ result.risk_score }}"
+      risk_factors: "{{ result.risk_factors }}"
+      
+  # Step 5: Compliance Check
+  - id: compliance_check
+    name: "Compliance Check"
+    action: kyc.check_compliance
+    depends_on: [risk_assessment]
+    input:
+      customer: "{{ input.customer }}"
+      document_results: "{{ steps.validate_documents.document_results }}"
+      risk_level: "{{ steps.risk_assessment.risk_level }}"
+    output:
+      is_compliant: "{{ result.is_compliant }}"
+      checks_passed: "{{ result.checks_passed }}"
+      checks_failed: "{{ result.checks_failed }}"
+      required_actions: "{{ result.required_actions }}"
+      
+  # Step 6: Decision Gate
+  - id: decision
+    name: "Verification Decision"
+    action: kyc.make_decision
+    depends_on: [compliance_check]
+    input:
+      risk_level: "{{ steps.risk_assessment.risk_level }}"
+      risk_score: "{{ steps.risk_assessment.risk_score }}"
+      is_compliant: "{{ steps.compliance_check.is_compliant }}"
+      sanctions_match: "{{ steps.screening.sanctions_match }}"
+      pep_match: "{{ steps.screening.pep_match }}"
+    output:
+      decision: "{{ result.decision }}"
+      # Possible decisions: approved, manual_review, escalated, rejected
+      
+  # Step 7: Generate Report
+  - id: generate_report
+    name: "Generate Verification Report"
+    action: kyc.generate_report
+    depends_on: [decision]
+    input:
+      customer: "{{ input.customer }}"
+      all_results:
+        documents: "{{ steps.validate_documents.document_results }}"
+        identity: "{{ steps.verify_identity }}"
+        screening: "{{ steps.screening }}"
+        risk: "{{ steps.risk_assessment }}"
+        compliance: "{{ steps.compliance_check }}"
+        decision: "{{ steps.decision.decision }}"
+    output:
+      report: "{{ result }}"
+      
+  # Step 8: Route Based on Decision
+  - id: route_decision
+    name: "Route Decision"
+    action: workflow.branch
+    depends_on: [decision]
+    branches:
+      - condition: "{{ steps.decision.decision == 'approved' }}"
+        goto: notify_approved
+      - condition: "{{ steps.decision.decision == 'manual_review' }}"
+        goto: queue_for_review
+      - condition: "{{ steps.decision.decision == 'escalated' }}"
+        goto: escalate_to_compliance
+      - condition: "{{ steps.decision.decision == 'rejected' }}"
+        goto: notify_rejected
+        
+  # Branch: Approved
+  - id: notify_approved
+    name: "Process Approval"
+    action: kyc.process_approval
+    input:
+      customer: "{{ input.customer }}"
+      verification_id: "{{ workflow.id }}"
+    output:
+      notification_sent: "{{ result.sent }}"
+      
+  # Branch: Manual Review
+  - id: queue_for_review
+    name: "Queue for Manual Review"
+    action: kyc.queue_review
+    input:
+      customer: "{{ input.customer }}"
+      verification_id: "{{ workflow.id }}"
+      risk_level: "{{ steps.risk_assessment.risk_level }}"
+      issues: "{{ steps.compliance_check.checks_failed }}"
+    output:
+      queue_id: "{{ result.queue_id }}"
+      assigned_to: "{{ result.assigned_to }}"
+      
+  # Branch: Escalate
+  - id: escalate_to_compliance
+    name: "Escalate to Compliance"
+    action: kyc.escalate
+    input:
+      customer: "{{ input.customer }}"
+      verification_id: "{{ workflow.id }}"
+      risk_factors: "{{ steps.risk_assessment.risk_factors }}"
+      pep_match: "{{ steps.screening.pep_match }}"
+      sanctions_match: "{{ steps.screening.sanctions_match }}"
+    output:
+      escalation_id: "{{ result.escalation_id }}"
+      escalated_to: "{{ result.escalated_to }}"
+      
+  # Branch: Rejected
+  - id: notify_rejected
+    name: "Process Rejection"
+    action: kyc.process_rejection
+    input:
+      customer: "{{ input.customer }}"
+      verification_id: "{{ workflow.id }}"
+      reason: "{{ steps.decision.rejection_reason }}"
+    output:
+      notification_sent: "{{ result.sent }}"
+
+# Output schema
+output:
+  verification_id: "{{ workflow.id }}"
+  status: "{{ steps.decision.decision }}"
+  risk_level: "{{ steps.risk_assessment.risk_level }}"
+  risk_score: "{{ steps.risk_assessment.risk_score }}"
+  compliance_status: "{{ steps.compliance_check.is_compliant }}"
+  report: "{{ steps.generate_report.report }}"
+  processing_time_ms: "{{ workflow.duration_ms }}"
+
+# Error handling
+on_error:
+  - condition: "{{ error.type == 'timeout' }}"
+    action: kyc.handle_timeout
+    goto: queue_for_review
+  - condition: "{{ error.type == 'service_unavailable' }}"
+    action: workflow.retry
+    max_retries: 2
+  - condition: default
+    action: kyc.log_error
+    goto: queue_for_review
+
+# Audit logging
+audit:
+  log_inputs: true
+  log_outputs: true
+  log_decisions: true
+  retention_days: 2555  # 7 years for compliance
+  sensitive_fields:
+    - customer.date_of_birth
+    - customer.email
+    - customer.phone
+    - documents.content
+

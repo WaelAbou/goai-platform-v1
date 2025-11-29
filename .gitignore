@@ -1,0 +1,172 @@
+# ============================================
+# GoAI Sovereign Platform - Git Ignore
+# ============================================
+
+# ----------------
+# Python
+# ----------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ----------------
+# Virtual Environments
+# ----------------
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ----------------
+# Environment Variables (IMPORTANT - contains API keys)
+# ----------------
+.env
+.env.local
+.env.*.local
+*.env
+secrets.yaml
+secrets.json
+
+# ----------------
+# IDE & Editors
+# ----------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ----------------
+# OS Generated
+# ----------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ----------------
+# Testing & Coverage
+# ----------------
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+junit.xml
+
+# ----------------
+# Data & Storage (regenerated at runtime)
+# ----------------
+data/
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+*.faiss
+*.index
+*.pkl
+*.pickle
+
+# ----------------
+# Logs
+# ----------------
+logs/
+*.log
+*.log.*
+
+# ----------------
+# Docker
+# ----------------
+.docker/
+
+# ----------------
+# Node.js (UI Console)
+# ----------------
+node_modules/
+ui/console/node_modules/
+ui/console/dist/
+ui/console/.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+
+# ----------------
+# Build Artifacts
+# ----------------
+*.egg-info/
+.eggs/
+*.whl
+
+# ----------------
+# Jupyter Notebooks
+# ----------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ----------------
+# Model Files (too large for git)
+# ----------------
+*.bin
+*.h5
+*.hdf5
+*.onnx
+*.pt
+*.pth
+models/
+!models/.gitkeep
+
+# ----------------
+# Temporary Files
+# ----------------
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ----------------
+# Documentation Build
+# ----------------
+docs/_build/
+site/
