@@ -119,7 +119,7 @@ async def get_activity_logs(
             conn = _get_db_connection(EBC_DB)
             if conn:
                 cursor = conn.execute("""
-                    SELECT id, user_id, subject, sentiment, category, 
+                    SELECT id, customer_id, customer_name, subject, sentiment, category, 
                            priority, status, created_at
                     FROM tickets 
                     WHERE created_at > ?
@@ -128,18 +128,22 @@ async def get_activity_logs(
                 """, (cutoff_time, limit))
                 
                 for row in cursor.fetchall():
+                    subject = row["subject"] or "No subject"
+                    sentiment = row["sentiment"] or "unknown"
+                    priority = row["priority"] or "normal"
                     activities.append(ActivityItem(
                         id=row["id"],
                         use_case="ebc_tickets",
                         action="Ticket Analysis",
                         status=row["status"] or "analyzed",
-                        summary=f"{row['subject'][:50]}... - {row['sentiment']}, {row['priority']} priority",
-                        user_id=row["user_id"],
+                        summary=f"{subject[:50]}{'...' if len(subject) > 50 else ''} - {sentiment}, {priority} priority",
+                        user_id=row["customer_id"] or "anonymous",
                         created_at=row["created_at"],
                         metadata={
-                            "sentiment": row["sentiment"],
+                            "sentiment": sentiment,
                             "category": row["category"],
-                            "priority": row["priority"],
+                            "priority": priority,
+                            "customer_name": row["customer_name"],
                         }
                     ))
                     use_case_counts["ebc_tickets"] += 1
