@@ -7,7 +7,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr
+from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr, activity
 
 
 @asynccontextmanager
@@ -83,6 +83,7 @@ app.include_router(memory.router, prefix="/api/v1/memory", tags=["User Memory"])
 app.include_router(ebc_tickets.router, prefix="/api/v1/ebc-tickets", tags=["EBC Tickets"])
 app.include_router(customer_kyc.router, prefix="/api/v1", tags=["Customer KYC"])
 app.include_router(ocr.router, prefix="/api/v1", tags=["OCR"])
+app.include_router(activity.router, prefix="/api/v1", tags=["Activity"])
 
 
 @app.get("/health")

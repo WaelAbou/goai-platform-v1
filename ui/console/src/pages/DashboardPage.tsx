@@ -15,7 +15,11 @@ import {
   Cpu,
   Cloud,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  UserCheck,
+  Ticket,
+  MemoryStick,
+  Filter
 } from 'lucide-react';
 import { ragApi, healthApi, api, llmApi } from '../api/client';
 
@@ -38,6 +42,24 @@ interface FeedbackStats {
   positive_rate: number;
   by_model: Record<string, { positive: number; negative: number; total: number }>;
   recent_negative: Array<{ id: string; query: string; comment: string; model: string; created_at: string }>;
+}
+
+interface ActivityItem {
+  id: string;
+  use_case: string;
+  action: string;
+  status: string;
+  summary: string;
+  user_id: string;
+  created_at: string;
+  metadata?: Record<string, any>;
+}
+
+interface ActivitySummary {
+  kyc: { total: number; approved: number; rejected: number; pending: number };
+  ebc_tickets: { total: number; positive: number; negative: number; neutral: number };
+  feedback: { total: number; positive: number; negative: number };
+  memory: { total: number; short: number; medium: number; long: number };
 }
 
 interface ConfigStatus {
@@ -67,6 +89,9 @@ export default function DashboardPage() {
   const [providers, setProviders] = useState<Record<string, ProviderStatus>>({});
   const [telemetry, setTelemetry] = useState<any>(null);
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats | null>(null);
+  const [activityLogs, setActivityLogs] = useState<ActivityItem[]>([]);
+  const [activitySummary, setActivitySummary] = useState<ActivitySummary | null>(null);
+  const [activityFilter, setActivityFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -80,13 +105,15 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const [ragStats, configData, perfData, providerData, telemetryData, feedbackData] = await Promise.all([
+      const [ragStats, configData, perfData, providerData, telemetryData, feedbackData, activityData, summaryData] = await Promise.all([
         ragApi.getStats(),
         healthApi.config(),
         api.get('/performance/stats').catch(() => ({ data: {} })),
         llmApi.getProviders().catch(() => ({ data: { providers: {} } })),
         api.get('/telemetry/dashboard').catch(() => ({ data: {} })),
-        api.get('/feedback/stats').catch(() => ({ data: null }))
+        api.get('/feedback/stats').catch(() => ({ data: null })),
+        api.get('/activity/logs?limit=20').catch(() => ({ data: { items: [] } })),
+        api.get('/activity/summary').catch(() => ({ data: { summary: null } }))
       ]);
 
       setStats({
@@ -105,6 +132,8 @@ export default function DashboardPage() {
       setProviders(providerData.data.providers || {});
       setTelemetry(telemetryData.data);
       setFeedbackStats(feedbackData.data);
+      setActivityLogs(activityData.data.items || []);
+      setActivitySummary(summaryData.data.summary || null);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
@@ -495,6 +524,182 @@ export default function DashboardPage() {
             )}
           </div>
         )}
+
+        {/* Use Cases Activity */}
+        <div className="card" style={{ marginBottom: 24 }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className="card-title">
+              <Activity size={20} style={{ marginRight: 8 }} />
+              Use Cases Activity
+            </h2>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['all', 'kyc', 'ebc_tickets', 'feedback', 'memory'].map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setActivityFilter(filter)}
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: 12,
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: activityFilter === filter ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                    color: activityFilter === filter ? 'white' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {filter === 'all' ? 'All' : 
+                   filter === 'kyc' ? 'KYC' : 
+                   filter === 'ebc_tickets' ? 'Tickets' : 
+                   filter === 'feedback' ? 'Feedback' : 'Memory'}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Summary Cards */}
+          {activitySummary && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+              <div style={{ 
+                padding: 12, 
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(139, 92, 246, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <UserCheck size={16} color="#8b5cf6" />
+                  <span style={{ fontSize: 12, color: '#8b5cf6', fontWeight: 600 }}>KYC</span>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{activitySummary.kyc.total}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  ✅ {activitySummary.kyc.approved} approved • ⏳ {activitySummary.kyc.pending} pending
+                </div>
+              </div>
+              
+              <div style={{ 
+                padding: 12, 
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(236, 72, 153, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Ticket size={16} color="#ec4899" />
+                  <span style={{ fontSize: 12, color: '#ec4899', fontWeight: 600 }}>Tickets</span>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{activitySummary.ebc_tickets.total}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  😊 {activitySummary.ebc_tickets.positive} • 😐 {activitySummary.ebc_tickets.neutral} • 😞 {activitySummary.ebc_tickets.negative}
+                </div>
+              </div>
+              
+              <div style={{ 
+                padding: 12, 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(16, 185, 129, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <ThumbsUp size={16} color="#10b981" />
+                  <span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>Feedback</span>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{activitySummary.feedback.total}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  👍 {activitySummary.feedback.positive} • 👎 {activitySummary.feedback.negative}
+                </div>
+              </div>
+              
+              <div style={{ 
+                padding: 12, 
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(59, 130, 246, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Brain size={16} color="#3b82f6" />
+                  <span style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>Memory</span>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{activitySummary.memory.total}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  Short: {activitySummary.memory.short} • Long: {activitySummary.memory.long}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Activity Log */}
+          {activityLogs.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {activityLogs
+                .filter(item => activityFilter === 'all' || item.use_case === activityFilter)
+                .slice(0, 10)
+                .map(item => (
+                <div 
+                  key={item.id}
+                  style={{
+                    padding: 12,
+                    background: 'var(--bg-tertiary)',
+                    borderRadius: 'var(--radius-md)',
+                    borderLeft: `3px solid ${
+                      item.use_case === 'kyc' ? '#8b5cf6' :
+                      item.use_case === 'ebc_tickets' ? '#ec4899' :
+                      item.use_case === 'feedback' ? (item.status === 'positive' ? '#10b981' : '#ef4444') :
+                      '#3b82f6'
+                    }`
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {item.use_case === 'kyc' && <UserCheck size={16} color="#8b5cf6" />}
+                      {item.use_case === 'ebc_tickets' && <Ticket size={16} color="#ec4899" />}
+                      {item.use_case === 'feedback' && (
+                        item.status === 'positive' ? <ThumbsUp size={16} color="#10b981" /> : <ThumbsDown size={16} color="#ef4444" />
+                      )}
+                      {item.use_case === 'memory' && <Brain size={16} color="#3b82f6" />}
+                      <div>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>{item.action}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                          {item.summary}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        padding: '2px 8px',
+                        fontSize: 10,
+                        borderRadius: 'var(--radius-sm)',
+                        background: 
+                          item.status === 'approved' || item.status === 'positive' ? 'rgba(16, 185, 129, 0.2)' :
+                          item.status === 'rejected' || item.status === 'negative' ? 'rgba(239, 68, 68, 0.2)' :
+                          'rgba(234, 179, 8, 0.2)',
+                        color:
+                          item.status === 'approved' || item.status === 'positive' ? '#10b981' :
+                          item.status === 'rejected' || item.status === 'negative' ? '#ef4444' :
+                          '#eab308',
+                        textTransform: 'uppercase',
+                        fontWeight: 600
+                      }}>
+                        {item.status}
+                      </span>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                        {new Date(item.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ 
+              padding: 40, 
+              textAlign: 'center', 
+              color: 'var(--text-muted)' 
+            }}>
+              <Activity size={32} style={{ marginBottom: 12, opacity: 0.3 }} />
+              <div>No use case activity yet</div>
+              <div style={{ fontSize: 12, marginTop: 4 }}>Run KYC verifications, analyze tickets, or create memories</div>
+            </div>
+          )}
+        </div>
 
         {/* Recent Traces */}
         <div className="card">
