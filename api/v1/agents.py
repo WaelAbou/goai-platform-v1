@@ -17,6 +17,7 @@ import json
 import asyncio
 
 from modules.agents import agent, tool_registry, Agent
+from modules.agents.planner import plan_execute_agent, PlanAndExecuteAgent
 
 
 router = APIRouter()
@@ -28,6 +29,14 @@ class AgentRequest(BaseModel):
     context: Optional[str] = None
     model: Optional[str] = "gpt-4o-mini"
     max_iterations: Optional[int] = 5
+    stream: bool = False
+
+
+class PlanExecuteRequest(BaseModel):
+    """Request for plan-and-execute agent."""
+    task: str
+    model: Optional[str] = "gpt-4o-mini"
+    max_replans: Optional[int] = 2
     stream: bool = False
 
 
@@ -206,4 +215,103 @@ async def quick_ask(question: str, use_tools: bool = True):
             "answer": response.get("content", ""),
             "tools_used": []
         }
+
+
+# ==================== Plan-and-Execute Agent ====================
+
+@router.post("/plan-execute")
+async def run_plan_execute(request: PlanExecuteRequest):
+    """
+    Run the Plan-and-Execute agent pattern.
+    
+    This agent:
+    1. PLAN: Creates a detailed step-by-step plan
+    2. EXECUTE: Runs each step, using tools as needed
+    3. REPLAN: Revises the plan if steps fail
+    4. SYNTHESIZE: Combines results into final answer
+    
+    Ideal for complex, multi-step tasks.
+    
+    Example:
+    ```
+    POST /api/v1/agents/plan-execute
+    {
+        "task": "Research the top 3 Python web frameworks, compare their performance, and recommend the best one for a startup"
+    }
+    ```
+    
+    Response includes:
+    - goal: The understood objective
+    - steps: Each planned step with status and results
+    - final_result: Synthesized answer
+    - replans: Number of plan revisions needed
+    """
+    if request.stream:
+        return StreamingResponse(
+            stream_plan_execute(request),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive"
+            }
+        )
+    
+    agent_instance = PlanAndExecuteAgent(
+        model=request.model,
+        max_replans=request.max_replans
+    )
+    
+    result = await agent_instance.run(task=request.task)
+    return result
+
+
+async def stream_plan_execute(request: PlanExecuteRequest):
+    """Stream plan-and-execute agent execution."""
+    agent_instance = PlanAndExecuteAgent(
+        model=request.model,
+        max_replans=request.max_replans
+    )
+    
+    async for event in agent_instance.stream(task=request.task):
+        yield f"data: {json.dumps(event)}\n\n"
+        await asyncio.sleep(0)
+    
+    yield "data: [DONE]\n\n"
+
+
+@router.post("/plan-only")
+async def create_plan_only(task: str, model: str = "gpt-4o-mini"):
+    """
+    Create a plan without executing it.
+    
+    Useful for:
+    - Previewing what the agent would do
+    - Reviewing/editing a plan before execution
+    - Understanding task complexity
+    
+    Example:
+    ```
+    POST /api/v1/agents/plan-only?task=Build a web scraper for news articles
+    ```
+    """
+    agent_instance = PlanAndExecuteAgent(model=model)
+    plan = await agent_instance._create_plan(task)
+    
+    return {
+        "task": plan.task,
+        "goal": plan.goal,
+        "steps": [
+            {
+                "step_number": s.step_number,
+                "description": s.description,
+                "tools_needed": s.tools_needed,
+                "depends_on": s.depends_on
+            }
+            for s in plan.steps
+        ],
+        "total_steps": len(plan.steps),
+        "estimated_tools": list(set(
+            tool for s in plan.steps for tool in s.tools_needed
+        ))
+    }
 

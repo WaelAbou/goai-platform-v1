@@ -10,15 +10,17 @@
 
 1. [Executive Summary](#executive-summary)
 2. [Core Modules](#core-modules)
-3. [Security & Governance](#security--governance)
-4. [Sovereign Stack Overview](#sovereign-stack-overview)
-5. [Layer 1 — Inference Layer](#layer-1--inference-layer)
-6. [Layer 2 — Gateway Layer](#layer-2--gateway-layer)
-7. [Layer 3 — Knowledge Layer](#layer-3--knowledge-layer)
-8. [Layer 4 — Application Layer](#layer-4--application-layer)
-9. [Layer 5 — Operations Layer](#layer-5--operations-layer)
-10. [Implementation Guide](#implementation-guide)
-11. [Appendix](#appendix)
+3. [AI Agent Framework](#ai-agent-framework)
+4. [Security & Governance](#security--governance)
+5. [Sovereign Stack Overview](#sovereign-stack-overview)
+6. [Layer 1 — Inference Layer](#layer-1--inference-layer)
+7. [Layer 2 — Gateway Layer](#layer-2--gateway-layer)
+8. [Layer 3 — Knowledge Layer](#layer-3--knowledge-layer)
+9. [Layer 4 — Application Layer](#layer-4--application-layer)
+10. [Layer 5 — Operations Layer](#layer-5--operations-layer)
+11. [Testing Use Cases](#testing-use-cases)
+12. [Implementation Guide](#implementation-guide)
+13. [Appendix](#appendix)
 
 ---
 
@@ -44,6 +46,10 @@ GoAI is a **fully self-hosted AI infrastructure** designed for organizations req
 | 👥 **Multi-Tenant** | User isolation, RBAC, and quota management |
 | 📊 **Full Observability** | Prometheus metrics, Grafana dashboards, audit logs |
 | 🔄 **Production Ready** | Blue/green deployments, DR, and backup automation |
+| 📈 **AI Evaluations** | LLM-as-Judge quality measurement and regression detection |
+| 🔌 **MCP Protocol** | Standardized tool integration via Model Context Protocol |
+| 🪝 **Event-Driven** | Webhooks and triggers for automated workflows |
+| 🧠 **Memory System** | Multi-tier agent memory (short/medium/long-term) |
 
 ### Deployment Options
 
@@ -74,6 +80,11 @@ These **non-negotiable modules** are included in every deployment and form the f
 │   │    Logging   │  │    Pipeline  │  │    Engine    │  │    Agent     │           │
 │   └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘           │
 │                                                                                      │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│   │ 📊 AI Evals  │  │ 🔌 MCP       │  │ 🪝 Triggers  │  │ 🧠 Memory    │           │
+│   │              │  │    Protocol  │  │    Webhooks  │  │    System    │           │
+│   └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                                                                                      │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -87,8 +98,100 @@ These **non-negotiable modules** are included in every deployment and form the f
 | **📄 Ingestion Pipeline** | Document processing | Chunk size, OCR, file limits | Supported types, embedding model |
 | **📨 Streaming Engine** | Real-time SSE streaming | Timeouts, buffers | Protocol, event types |
 | **🧩 Multi-Agent** | Collaborative AI agents | Custom tools/roles | Core roles, patterns, presets |
+| **📊 AI Evals** | LLM-as-Judge quality evaluation | Metrics, datasets, thresholds | Scoring format, evaluation flow |
+| **🔌 MCP Protocol** | Model Context Protocol integration | External servers, tool mapping | Protocol spec, message format |
+| **🪝 Triggers/Webhooks** | Event-driven orchestration | Actions, filters, signatures | Event schema, retry policy |
+| **🧠 Memory System** | Multi-tier agent memory | Retention, categories | Memory types, extraction |
 
 > 📖 **Full specification**: See [docs/CORE_MODULES.md](docs/CORE_MODULES.md) for complete API definitions, configuration options, and standards.
+
+---
+
+## AI Agent Framework
+
+The platform implements a complete **7-step AI Agent Framework** covering all essential components:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           7-STEP AI AGENT FRAMEWORK                                  │
+│                                                                                      │
+│   ┌──────────────────────────────────────────────────────────────────────────────┐  │
+│   │                                                                               │  │
+│   │    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐     │  │
+│   │    │ 1.      │   │ 2.      │   │ 3.      │   │ 4.      │   │ 5.      │     │  │
+│   │    │ System  │──▶│  LLM    │──▶│  Tools  │──▶│ Memory  │──▶│ Orches- │     │  │
+│   │    │ Prompt  │   │         │   │         │   │         │   │ tration │     │  │
+│   │    └─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘     │  │
+│   │         │             │             │             │             │           │  │
+│   │         ▼             ▼             ▼             ▼             ▼           │  │
+│   │    ┌─────────────────────────────────────────────────────────────────┐     │  │
+│   │    │                        6. UI Layer                              │     │  │
+│   │    │          (Console, Chat, API Endpoints, Streaming)              │     │  │
+│   │    └─────────────────────────────────────────────────────────────────┘     │  │
+│   │         │                                                                   │  │
+│   │         ▼                                                                   │  │
+│   │    ┌─────────────────────────────────────────────────────────────────┐     │  │
+│   │    │                      7. AI Evaluations                          │     │  │
+│   │    │        (LLM-as-Judge, Datasets, Regression, Quality)            │     │  │
+│   │    └─────────────────────────────────────────────────────────────────┘     │  │
+│   │                                                                               │  │
+│   └──────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Framework Components
+
+| Step | Component | Implementation | Location |
+|------|-----------|----------------|----------|
+| **1. System Prompt** | Configurable agent personas | Prompt templates, per-agent config | `modules/agents/engine.py`, `api/v1/prompts.py` |
+| **2. LLM** | Multi-provider routing | OpenAI, Anthropic, Ollama, vLLM | `core/llm/router.py` |
+| **3. Tools** | Extensible tool registry | Calculator, Python, Web Search, etc. | `modules/agents/tools.py` |
+| **4. Memory** | Multi-tier persistence | Short/Medium/Long-term, SQLite | `api/v1/memory.py` |
+| **5. Orchestration** | Workflow engine | YAML workflows, conditional logic | `core/orchestrator/engine.py` |
+| **6. UI** | Frontend interfaces | React console, API endpoints | `ui/console/`, `api/v1/` |
+| **7. AI Evals** | Quality measurement | LLM-as-Judge, datasets | `modules/evals/engine.py` |
+
+### Additional Integrations
+
+| Module | Purpose | API Endpoints |
+|--------|---------|---------------|
+| **Plan-and-Execute** | Complex task decomposition | `POST /api/v1/agents/plan-execute` |
+| **MCP Protocol** | Standardized tool integration | `GET /api/v1/mcp/tools`, `POST /api/v1/mcp/execute` |
+| **Triggers/Webhooks** | Event-driven automation | `POST /api/v1/triggers/webhooks` |
+| **Multi-Agent** | Agent collaboration patterns | `POST /api/v1/multi-agent/session` |
+| **RAG Pipeline** | Document-grounded generation | `POST /api/v1/rag/query` |
+
+### Plan-and-Execute Pattern
+
+For complex tasks requiring strategic planning:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           PLAN-AND-EXECUTE FLOW                                      │
+│                                                                                      │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    │
+│   │  TASK    │───▶│  PLAN    │───▶│ EXECUTE  │───▶│ REPLAN?  │───▶│SYNTHESIZE│    │
+│   │          │    │          │    │  Steps   │    │          │    │          │    │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    │
+│                         │              │               │                           │
+│                         ▼              ▼               ▼                           │
+│                   Create steps   Use tools      Revise if                          │
+│                   with deps      per step       step fails                         │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**API Usage:**
+```bash
+# Full plan-and-execute
+curl -X POST http://localhost:8000/api/v1/agents/plan-execute \
+  -H "Content-Type: application/json" \
+  -d '{"task": "Research Python web frameworks and recommend the best one"}'
+
+# Preview plan only (without execution)
+curl -X POST "http://localhost:8000/api/v1/agents/plan-only?task=Build+a+calculator+app"
+```
 
 ---
 
@@ -143,7 +246,7 @@ Guarantees:
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [CORE_MODULES.md](docs/CORE_MODULES.md) | 8 non-negotiable modules | Architects, Developers |
+| [CORE_MODULES.md](docs/CORE_MODULES.md) | 12 core platform modules | Architects, Developers |
 | [SECURITY_GOVERNANCE.md](docs/SECURITY_GOVERNANCE.md) | Security controls, RBAC, compliance | Security, Compliance |
 | [DEVELOPMENT_CYCLE.md](docs/DEVELOPMENT_CYCLE.md) | 10-step development process | Developers |
 | [USE_CASE_BLUEPRINT.md](docs/USE_CASE_BLUEPRINT.md) | Templates for new use cases | Product, Developers |
@@ -151,6 +254,13 @@ Guarantees:
 | [OBSERVABILITY_MONITORING.md](docs/OBSERVABILITY_MONITORING.md) | Metrics, logs, dashboards | Operations, SRE |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical architecture diagrams | Architects |
 | [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) | Developer cheat sheet | Developers |
+
+### Use Case Examples
+
+| Use Case | Location | Description |
+|----------|----------|-------------|
+| Customer KYC | `use_cases/customer_kyc/` | Document verification & risk assessment |
+| Document Q&A | `use_cases/document_qa/` | RAG-powered document search |
 
 ---
 
@@ -1901,6 +2011,168 @@ dr_failover:
 
 ---
 
+## Testing Use Cases
+
+The platform provides multiple ways to test and validate new use cases.
+
+### Quick API Testing
+
+Test features immediately without additional setup:
+
+```bash
+# 1. Health Check
+curl http://localhost:8000/health
+
+# 2. Test Agent Tools
+curl -X POST http://localhost:8000/api/v1/agents/tools/execute \
+  -H "Content-Type: application/json" \
+  -d '{"tool_name": "calculator", "arguments": {"expression": "100 + 200"}}'
+
+# 3. Ingest a Document
+curl -X POST http://localhost:8000/api/v1/ingest/text \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Your document content here", "filename": "doc.txt"}'
+
+# 4. Query with RAG
+curl -X POST http://localhost:8000/api/v1/rag/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What does the document say?", "top_k": 5}'
+```
+
+### Create Evaluation Datasets
+
+Define test cases for systematic quality validation:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/evals/datasets \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Use Case Tests",
+    "description": "Test cases for my new use case",
+    "test_cases": [
+      {"query": "Question 1?", "expected": "Expected answer 1", "tags": ["category1"]},
+      {"query": "Question 2?", "expected": "Expected answer 2", "tags": ["category2"]}
+    ]
+  }'
+```
+
+### Create Webhook Triggers
+
+Set up event-driven automation for your use case:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/triggers/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Use Case Handler",
+    "description": "Trigger actions for my use case",
+    "action": "rag_query",
+    "action_params": {"top_k": 5}
+  }'
+```
+
+### Structured Use Case Development
+
+For production use cases, follow this folder structure:
+
+```
+use_cases/
+└── my_use_case/
+    ├── intent.yaml        # Business requirements & scope
+    ├── workflow.yaml      # Technical workflow definition
+    ├── test_use_case.py   # Automated test script
+    └── README.md          # Documentation
+```
+
+**Example: `intent.yaml`**
+```yaml
+use_case:
+  name: "Document Q&A"
+  id: "document-qa"
+  version: "1.0.0"
+  
+  problem: |
+    Users need quick answers from company documents.
+    
+  solution: |
+    RAG-powered Q&A with document ingestion and retrieval.
+    
+  success_metrics:
+    - metric: "Response time"
+      target: "< 3 seconds"
+    - metric: "Accuracy"
+      target: "90%+"
+      
+  test_scenarios:
+    - name: "Basic Q&A"
+      input: "What is the vacation policy?"
+      expected_behavior: "Return relevant policy with citation"
+```
+
+**Example: `test_use_case.py`**
+```python
+import asyncio
+import httpx
+
+BASE_URL = "http://localhost:8000/api/v1"
+
+async def test_use_case():
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        # 1. Ingest test documents
+        response = await client.post(f"{BASE_URL}/ingest/text", json={
+            "content": "Your test document content",
+            "filename": "test.txt"
+        })
+        print(f"Ingested: {response.json()}")
+        
+        # 2. Test retrieval
+        response = await client.post(f"{BASE_URL}/retrieve/", json={
+            "query": "Your test query",
+            "top_k": 3
+        })
+        print(f"Retrieved: {len(response.json().get('documents', []))} documents")
+        
+        # 3. Test RAG query
+        response = await client.post(f"{BASE_URL}/rag/query", json={
+            "query": "Your test question?"
+        })
+        print(f"Answer: {response.json().get('answer', 'No answer')}")
+
+if __name__ == "__main__":
+    asyncio.run(test_use_case())
+```
+
+### Run Tests
+
+```bash
+# Run a specific use case test
+python use_cases/document_qa/test_use_case.py
+
+# Run all tests with pytest
+pytest tests/ -v
+```
+
+### Available Built-in Tools
+
+| Tool | Description | Example |
+|------|-------------|---------|
+| `calculator` | Math expressions | `{"expression": "100 * 2.5"}` |
+| `get_datetime` | Current date/time | `{}` |
+| `web_search` | Web search via DuckDuckGo | `{"query": "Python FastAPI", "num_results": 5}` |
+| `execute_python` | Run Python code (sandboxed) | `{"code": "print(2+2)"}` |
+| `fetch_url` | Fetch URL content | `{"url": "https://example.com"}` |
+| `parse_json` | Parse JSON string | `{"json_string": "{\"key\": \"value\"}"}` |
+
+### Pre-built Evaluation Datasets
+
+| Dataset | Description | Test Cases |
+|---------|-------------|------------|
+| `qa_general` | Basic Q&A scenarios | 3 |
+| `rag_eval` | RAG with context | 2 |
+| `safety` | Safety evaluation | 2 |
+
+---
+
 ## Implementation Guide
 
 ### Quick Start (Development)
@@ -1912,16 +2184,46 @@ cd goai-platform
 
 # Setup environment
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env with your API keys (see below)
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start services
+# Start backend
 uvicorn main:app --reload --port 8000
 
-# Start frontend
+# Start frontend (in another terminal)
 cd ui/console && npm install && npm run dev
+
+# Test the installation
+curl http://localhost:8000/health
+curl http://localhost:8000/api/v1/agents/tools
+```
+
+### Environment Variables (Required)
+
+```bash
+# .env file - minimum required
+OPENAI_API_KEY=sk-...            # For LLM features
+JWT_SECRET=your-256-bit-secret   # For authentication
+
+# Optional providers
+ANTHROPIC_API_KEY=...            # For Claude models
+OLLAMA_HOST=http://localhost:11434  # For local models
+```
+
+### Verify Installation
+
+```bash
+# Test agent tools (no API key needed)
+curl -X POST http://localhost:8000/api/v1/agents/tools/execute \
+  -H "Content-Type: application/json" \
+  -d '{"tool_name": "calculator", "arguments": {"expression": "2+2"}}'
+
+# Test RAG system
+curl -X POST http://localhost:8000/api/v1/ingest/text \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Test document content", "filename": "test.txt"}'
 ```
 
 ### Production Deployment
@@ -1992,23 +2294,109 @@ AWS_SECRET_ACCESS_KEY=...
 
 ### B. API Endpoints Summary
 
+#### Core Endpoints
+
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
-| `/api/v1/llm/generate` | POST | ✅ | Generate text |
+| `/health` | GET | ❌ | Health check |
+| `/config` | GET | ❌ | Configuration status |
+| `/metrics` | GET | ❌ | Prometheus metrics |
+
+#### LLM Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/llm/complete` | POST | ✅ | Text completion |
+| `/api/v1/llm/chat` | POST | ✅ | Chat completion |
 | `/api/v1/llm/stream` | POST | ✅ | Streaming generation |
-| `/api/v1/rag/ingest` | POST | ✅ | Ingest document |
+| `/api/v1/llm/providers` | GET | ✅ | List LLM providers |
+
+#### RAG Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
 | `/api/v1/rag/query` | POST | ✅ | Query with RAG |
+| `/api/v1/rag/ask` | POST | ✅ | Quick Q&A |
+| `/api/v1/rag/chat` | POST | ✅ | Conversational RAG |
+| `/api/v1/rag/documents` | GET | ✅ | List documents |
+| `/api/v1/rag/stats` | GET | ✅ | RAG statistics |
+| `/api/v1/rag/conversation` | POST | ✅ | Create conversation |
+| `/api/v1/ingest/text` | POST | ✅ | Ingest text |
+| `/api/v1/ingest/document` | POST | ✅ | Ingest document |
+
+#### Agent Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
 | `/api/v1/agents/run` | POST | ✅ | Run agent |
-| `/api/v1/memory` | CRUD | ✅ | User memory |
+| `/api/v1/agents/plan-execute` | POST | ✅ | Plan-and-Execute agent |
+| `/api/v1/agents/plan-only` | POST | ✅ | Create plan without executing |
+| `/api/v1/agents/tools` | GET | ✅ | List available tools |
+| `/api/v1/agents/tools/execute` | POST | ✅ | Execute tool directly |
+| `/api/v1/agents/ask` | POST | ✅ | Quick agent query |
+
+#### Memory Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/memory` | GET | ✅ | List memories |
+| `/api/v1/memory` | POST | ✅ | Create memory |
+| `/api/v1/memory/{id}` | GET | ✅ | Get memory |
+| `/api/v1/memory/{id}` | PUT | ✅ | Update memory |
+| `/api/v1/memory/{id}` | DELETE | ✅ | Delete memory |
+
+#### AI Evaluations Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/evals/datasets` | GET | ✅ | List evaluation datasets |
+| `/api/v1/evals/datasets` | POST | ✅ | Create dataset |
+| `/api/v1/evals/metrics` | GET | ✅ | List evaluation metrics |
+| `/api/v1/evals/run` | POST | ✅ | Run evaluation |
+
+#### MCP Protocol Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/mcp/info` | GET | ✅ | Server info |
+| `/api/v1/mcp/tools` | GET | ✅ | List MCP tools |
+| `/api/v1/mcp/execute` | POST | ✅ | Execute via MCP |
+| `/api/v1/mcp/stats` | GET | ✅ | Execution stats |
+
+#### Triggers/Webhooks Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/triggers/webhooks` | GET | ✅ | List webhooks |
+| `/api/v1/triggers/webhooks` | POST | ✅ | Create webhook |
+| `/api/v1/triggers/event-types` | GET | ✅ | List event types |
+| `/api/v1/triggers/webhook/{id}/trigger` | POST | ✅ | Trigger webhook |
+
+#### Orchestrator Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/orchestrator/workflows` | GET | ✅ | List workflows |
+| `/api/v1/orchestrator/workflows/execute` | POST | ✅ | Execute workflow |
+| `/api/v1/orchestrator/actions` | GET | ✅ | List available actions |
+
+#### Other Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/prompts` | CRUD | ✅ | Prompt library |
+| `/api/v1/feedback` | CRUD | ✅ | User feedback |
+| `/api/v1/telemetry/overview` | GET | ✅ | Telemetry data |
+| `/api/v1/performance/stats` | GET | ✅ | Performance stats |
 | `/api/v1/auth/login` | POST | ❌ | Login |
 | `/api/v1/admin/users` | CRUD | 🔒 | User management |
-| `/metrics` | GET | ❌ | Prometheus metrics |
-| `/health` | GET | ❌ | Health check |
 
 ### C. Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2.0 | Dec 2025 | Added AI Evaluations, MCP Protocol, Triggers/Webhooks |
+| 1.1.0 | Dec 2025 | Enhanced agent tools, memory system, prompt library |
 | 1.0.0 | Nov 2025 | Initial sovereign release |
 
 ---
