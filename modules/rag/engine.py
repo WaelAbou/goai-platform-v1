@@ -202,8 +202,15 @@ Step-back question:"""
 
         # Store chunks in vector retriever (in-memory)
         if self.vector_retriever and result.chunks:
+            # Pass pre-computed embeddings if ALL chunks have them (avoid mixed None values)
+            embeddings = None
+            all_have_embeddings = all(c.embedding is not None for c in result.chunks)
+            if all_have_embeddings:
+                embeddings = [c.embedding for c in result.chunks]
+            
             await self.vector_retriever.add_documents(
                 documents=[c.content for c in result.chunks],
+                embeddings=embeddings,
                 ids=[c.id for c in result.chunks],
                 metadata=[{
                     **c.metadata,

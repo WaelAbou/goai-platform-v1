@@ -135,7 +135,7 @@ async def list_webhooks():
             "id": row["id"],
             "name": row["name"],
             "description": row["description"],
-            "endpoint": f"/api/v1/triggers/webhook/{row['id']}",
+            "endpoint": f"/api/v1/triggers/webhooks/{row['id']}/trigger",
             "workflow_id": row["workflow_id"],
             "action": row["action"],
             "enabled": bool(row["enabled"]),
@@ -197,7 +197,7 @@ async def create_webhook(webhook: WebhookCreate):
     return {
         "id": webhook_id,
         "name": webhook.name,
-        "endpoint": f"/api/v1/triggers/webhook/{webhook_id}",
+        "endpoint": f"/api/v1/triggers/webhooks/{webhook_id}/trigger",
         "secret": secret,
         "message": "Webhook created. Use the secret to sign requests."
     }
@@ -220,7 +220,7 @@ async def get_webhook(webhook_id: str):
         "id": row["id"],
         "name": row["name"],
         "description": row["description"],
-        "endpoint": f"/api/v1/triggers/webhook/{row['id']}",
+        "endpoint": f"/api/v1/triggers/webhooks/{row['id']}/trigger",
         "workflow_id": row["workflow_id"],
         "action": row["action"],
         "action_params": json.loads(row["action_params"]) if row["action_params"] else None,
@@ -335,7 +335,7 @@ async def regenerate_webhook_secret(webhook_id: str):
 # Webhook Execution Endpoint
 # ============================================
 
-@router.post("/webhook/{webhook_id}")
+@router.post("/webhooks/{webhook_id}/trigger")
 async def trigger_webhook(
     webhook_id: str,
     request: Request,
@@ -367,26 +367,32 @@ async def trigger_webhook(
         conn.close()
         raise HTTPException(status_code=400, detail="Webhook is disabled")
     
-    # Get payload
+    # Read body once (stream can only be read once in Starlette/FastAPI)
+    body = await request.body()
+    
+    # Parse payload from body
     try:
-        payload = await request.json()
-    except:
+        payload = json.loads(body) if body else {}
+    except (json.JSONDecodeError, ValueError):
         payload = {}
     
-    # Verify signature if secret is set
+    # Verify signature if secret is set (MANDATORY when webhook has secret)
     if row["secret"]:
         signature = request.headers.get("X-Signature")
-        if signature:
-            body = await request.body()
-            expected_sig = hmac.new(
-                row["secret"].encode(),
-                body,
-                hashlib.sha256
-            ).hexdigest()
-            
-            if not hmac.compare_digest(signature, f"sha256={expected_sig}"):
-                conn.close()
-                raise HTTPException(status_code=401, detail="Invalid signature")
+        if not signature:
+            # Signature is REQUIRED when webhook has a secret configured
+            conn.close()
+            raise HTTPException(status_code=401, detail="Missing signature header (X-Signature required)")
+        
+        expected_sig = hmac.new(
+            row["secret"].encode(),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(signature, f"sha256={expected_sig}"):
+            conn.close()
+            raise HTTPException(status_code=401, detail="Invalid signature")
     
     # Execute the action
     action = row["action"]
@@ -566,7 +572,7 @@ async def list_event_types():
 @router.post("/quick-trigger")
 async def quick_trigger(
     action: TriggerAction,
-    payload: Dict[str, Any] = {}
+    payload: Optional[Dict[str, Any]] = None
 ):
     """
     Quick trigger an action without creating a webhook.
@@ -581,6 +587,10 @@ async def quick_trigger(
     """
     import time
     start_time = time.time()
+    
+    # Handle None default (avoid mutable default argument)
+    if payload is None:
+        payload = {}
     
     result = None
     status = "success"

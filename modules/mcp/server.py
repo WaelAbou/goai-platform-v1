@@ -179,13 +179,14 @@ class MCPServer:
             self.tools[tool_info["name"]] = mcp_tool
             
             # Create handler that delegates to existing tool
-            async def make_handler(name):
+            # Use default argument to capture current tool name in closure
+            def make_handler(name=tool_info["name"]):
                 async def handler(**kwargs):
                     return await tool_registry.execute(name, **kwargs)
                 return handler
             
-            # Use closure properly
-            self.handlers[tool_info["name"]] = None  # Will be set up dynamically
+            # Invoke factory and store the handler
+            self.handlers[tool_info["name"]] = make_handler()
     
     def _map_type(self, type_str: str) -> str:
         """Map internal types to JSON Schema types."""

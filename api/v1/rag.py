@@ -7,7 +7,7 @@ import json
 from modules.rag import rag_engine, RAGMode
 from modules.ingestion import ingestion_engine
 from core.llm import llm_router
-from core.vector import vector_retriever
+from core.vector import vector_retriever, get_embedding_provider
 
 router = APIRouter()
 
@@ -15,6 +15,12 @@ router = APIRouter()
 rag_engine.set_llm_router(llm_router)
 rag_engine.set_vector_retriever(vector_retriever)
 rag_engine.set_ingestion_engine(ingestion_engine)
+
+# Set up shared OpenAI embedding provider (singleton to avoid resource leaks)
+_embedding_provider = get_embedding_provider()
+if _embedding_provider:
+    vector_retriever.set_embedding_provider(_embedding_provider)
+    ingestion_engine.set_embedding_provider(_embedding_provider)
 
 
 # Request/Response Models

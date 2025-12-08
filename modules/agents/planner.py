@@ -426,17 +426,22 @@ Based on all the step results, provide a comprehensive final answer to the origi
                 if replan_count < self.max_replans:
                     replan_count += 1
                     
-                    # Capture completed work BEFORE replanning to preserve context
+                    # Capture completed work BEFORE replanning and ACCUMULATE context
                     completed_work = [
                         f"Step {s.step_number}: {s.description}\nResult: {s.result}"
                         for s in plan.steps if s.status == PlanStatus.COMPLETED and s.result
                     ]
                     if completed_work:
-                        prior_context = "Previously completed work:\n" + "\n\n".join(completed_work)
+                        new_context = "Work from plan revision " + str(plan.revision) + ":\n" + "\n\n".join(completed_work)
+                        # Accumulate context across multiple replans (don't overwrite)
+                        if prior_context:
+                            prior_context = prior_context + "\n\n---\n\n" + new_context
+                        else:
+                            prior_context = "Previously completed work:\n" + new_context
                     
                     plan = await self._replan(plan, step, str(e))
                     plan.status = PlanStatus.REPLANNED
-                    # Reset step tracking for new plan (prior_context preserves old context)
+                    # Reset step tracking for new plan (prior_context preserves cumulative context)
                     previous_results = {}
                     step_index = 0  # Restart iteration with new plan's steps
                 else:
@@ -554,13 +559,18 @@ Based on all the step results, provide a comprehensive final answer to the origi
                 if replan_count < self.max_replans:
                     replan_count += 1
                     
-                    # Capture completed work BEFORE replanning to preserve context
+                    # Capture completed work BEFORE replanning and ACCUMULATE context
                     completed_work = [
                         f"Step {s.step_number}: {s.description}\nResult: {s.result}"
                         for s in plan.steps if s.status == PlanStatus.COMPLETED and s.result
                     ]
                     if completed_work:
-                        prior_context = "Previously completed work:\n" + "\n\n".join(completed_work)
+                        new_context = "Work from plan revision " + str(plan.revision) + ":\n" + "\n\n".join(completed_work)
+                        # Accumulate context across multiple replans (don't overwrite)
+                        if prior_context:
+                            prior_context = prior_context + "\n\n---\n\n" + new_context
+                        else:
+                            prior_context = "Previously completed work:\n" + new_context
                     
                     yield {
                         "type": "replanning",
@@ -581,7 +591,7 @@ Based on all the step results, provide a comprehensive final answer to the origi
                         ]
                     }
                     
-                    # Reset step tracking for new plan (prior_context preserves old context)
+                    # Reset step tracking for new plan (prior_context preserves cumulative context)
                     previous_results = {}
                     step_index = 0  # Restart iteration with new plan's steps
                 else:

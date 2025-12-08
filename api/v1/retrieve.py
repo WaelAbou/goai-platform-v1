@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
 from modules.retrieval import retrieval_engine, RetrievalMode, RerankStrategy
-from core.vector import vector_retriever
+from core.vector import vector_retriever, get_embedding_provider
 from core.llm import llm_router
 
 router = APIRouter()
@@ -11,6 +11,11 @@ router = APIRouter()
 # Wire up the retrieval engine with the vector retriever and LLM router
 retrieval_engine.set_vector_retriever(vector_retriever)
 retrieval_engine.set_llm_router(llm_router)
+
+# Set up shared OpenAI embedding provider (singleton to avoid resource leaks)
+_embedding_provider = get_embedding_provider()
+if _embedding_provider:
+    vector_retriever.set_embedding_provider(_embedding_provider)
 
 
 class RetrieveRequest(BaseModel):

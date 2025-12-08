@@ -3,8 +3,15 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 from modules.ingestion import ingestion_engine, ChunkConfig, ChunkingStrategy
+from core.vector import get_embedding_provider
 
 router = APIRouter()
+
+# Set up shared OpenAI embedding provider (singleton to avoid resource leaks)
+# Note: vector_retriever is wired via rag.py orchestration layer
+_embedding_provider = get_embedding_provider()
+if _embedding_provider:
+    ingestion_engine.set_embedding_provider(_embedding_provider)
 
 
 class IngestTextRequest(BaseModel):
