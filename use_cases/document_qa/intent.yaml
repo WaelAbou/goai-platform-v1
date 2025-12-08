@@ -1,0 +1,66 @@
+# Document Q&A Use Case
+# AI-powered document search and question answering
+
+use_case:
+  name: "Document Q&A"
+  id: "document-qa"
+  version: "1.0.0"
+  
+  # Business context
+  business_owner: "Knowledge Management"
+  technical_owner: "ai-team@company.com"
+  
+  # Problem statement
+  problem: |
+    Employees spend significant time searching through documents
+    to find answers to common questions. Information is scattered
+    across multiple documents and formats.
+    
+  # Solution
+  solution: |
+    RAG-powered Q&A system that:
+    1. Ingests and indexes company documents
+    2. Understands natural language questions
+    3. Retrieves relevant document sections
+    4. Generates accurate answers with citations
+    
+  # Success metrics
+  success_metrics:
+    - metric: "Query response time"
+      baseline: "Manual search: 5-10 minutes"
+      target: "< 3 seconds"
+    - metric: "Answer accuracy"
+      target: "90%+"
+    - metric: "User satisfaction"
+      target: "4.5/5 rating"
+      
+  # Scope
+  in_scope:
+    - PDF document ingestion
+    - Text file processing
+    - Natural language Q&A
+    - Source citation
+    - Conversation history
+    
+  out_of_scope:
+    - Image/diagram analysis
+    - Document editing
+    - Real-time collaboration
+
+  # Test scenarios
+  test_scenarios:
+    - name: "Basic Q&A"
+      description: "Answer simple factual questions"
+      input: "What is the vacation policy?"
+      expected_behavior: "Return relevant policy text with citation"
+      
+    - name: "Multi-document Query"
+      description: "Find information across multiple documents"
+      input: "Compare remote work and vacation policies"
+      expected_behavior: "Synthesize information from multiple sources"
+      
+    - name: "Conversational Follow-up"
+      description: "Handle follow-up questions"
+      input: ["What are the expense limits?", "What about meals?"]
+      expected_behavior: "Maintain context across questions"
+

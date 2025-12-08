@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>GoAI Architecture – Layered Bubble Flow</title>
+
+<style>
+    body {
+        background: #0d1117;
+        font-family: "Inter", sans-serif;
+        color: #e6e9ef;
+        margin: 0;
+        padding: 40px 0;
+        text-align: center;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    h1 {
+        font-size: 32px;
+        color: #70b0ff;
+        margin-bottom: 50px;
+    }
+
+    .layer-box {
+        width: 92%;
+        margin: 0 auto;
+        background: #151a21;
+        border: 1px solid #1f2832;
+        border-radius: 16px;
+        padding: 24px 30px;
+        margin-bottom: 120px; /* LARGE GAP for bubble flow */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 3;
+    }
+
+    .layer-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #7ab1ff;
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .icon {
+        margin-right: 10px;
+        font-size: 24px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 14px;
+        margin-top: 12px;
+    }
+
+    .cell {
+        background: #1c232e;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #222a33;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: left;
+    }
+
+    /* MOVING BUBBLES BETWEEN LAYERS */
+    .bubble {
+        width: 22px;
+        height: 22px;
+        background: #70b0ff;
+        border-radius: 50%;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.8;
+        animation: floatDown 8s linear infinite;
+        box-shadow: 0 0 20px #70b0ff99;
+        z-index: 1;
+    }
+
+    @keyframes floatDown {
+        0%   { top: -30px; opacity: 0; }
+        10%  { opacity: 1; }
+        25%  { top: 160px; }
+        40%  { top: 350px; }
+        55%  { top: 540px; }
+        70%  { top: 740px; }
+        85%  { top: 950px; }
+        100% { top: 1150px; opacity: 0; }
+    }
+
+    /* MULTIPLE BUBBLES with different timing */
+    .bubble:nth-child(1) { left: 45%; animation-duration: 7s; }
+    .bubble:nth-child(2) { left: 55%; animation-duration: 9s; }
+    .bubble:nth-child(3) { left: 48%; animation-duration: 11s; }
+    .bubble:nth-child(4) { left: 52%; animation-duration: 13s; }
+
+</style>
+</head>
+
+<body>
+
+<h1>GoAI Sovereign Architecture — Layer Flow</h1>
+
+<!-- BUBBLES IN BACKGROUND -->
+<div class="bubble"></div>
+<div class="bubble"></div>
+<div class="bubble"></div>
+<div class="bubble"></div>
+
+<!-- APPLICATION -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">🧩</span>Application Layer</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>User-facing AI apps.</div>
+        <div class="cell"><b>Stack:</b><br>React, Streamlit, Chat UI.</div>
+        <div class="cell"><b>Example:</b><br>“Top 10 congested sites Cairo.”</div>
+        <div class="cell"><b>Notes:</b><br>Converts NL → intent.</div>
+    </div>
+</div>
+
+<!-- PLATFORM -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">⚙️</span>Platform Orchestration</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>Routing, intent, RBAC.</div>
+        <div class="cell"><b>Stack:</b><br>FastAPI, Keycloak.</div>
+        <div class="cell"><b>Example:</b><br>Intent = “Congestion Query”.</div>
+        <div class="cell"><b>Notes:</b><br>Routes to SQL + RAG.</div>
+    </div>
+</div>
+
+<!-- KNOWLEDGE -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">📚</span>Knowledge Layer</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>Retrieval & enterprise memory.</div>
+        <div class="cell"><b>Stack:</b><br>FAISS, BM25, Chroma.</div>
+        <div class="cell"><b>Example:</b><br>Retrieve Cairo KPI chunks.</div>
+        <div class="cell"><b>Notes:</b><br>ACL-aware search.</div>
+    </div>
+</div>
+
+<!-- MODEL -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">🤖</span>Model Layer</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>Reasoning & interpretation.</div>
+        <div class="cell"><b>Stack:</b><br>Llama, Qwen, Mistral.</div>
+        <div class="cell"><b>Example:</b><br>“SITE-7082 = 0.83 congestion.”</div>
+        <div class="cell"><b>Notes:</b><br>Uses SQL + retrieved KPIs.</div>
+    </div>
+</div>
+
+<!-- HARDWARE -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">🖥️</span>Hardware Layer</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>GPU compute & storage.</div>
+        <div class="cell"><b>Stack:</b><br>4× L40S / H100 / 910B.</div>
+        <div class="cell"><b>Example:</b><br>GPU0=LLM, GPU1=Tools.</div>
+        <div class="cell"><b>Notes:</b><br>NVMe + 25/40GbE.</div>
+    </div>
+</div>
+
+<!-- GOVERNANCE -->
+<div class="layer-box">
+    <div class="layer-title"><span class="icon">🛡️</span>Governance Layer</div>
+    <div class="grid">
+        <div class="cell"><b>Function:</b><br>Security, compliance, audit.</div>
+        <div class="cell"><b>Stack:</b><br>RBAC, IAM, Audit Logs.</div>
+        <div class="cell"><b>Example:</b><br>“User 102 → allowed.”</div>
+        <div class="cell"><b>Notes:</b><br>Version control & policies.</div>
+    </div>
+</div>
+
+</body>
+</html>

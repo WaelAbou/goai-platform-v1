@@ -112,7 +112,7 @@ Create a detailed plan:"""
 Overall Goal: {goal}
 
 Current Step: {step_description}
-
+{prior_context}
 Previous Steps Results:
 {previous_results}
 
@@ -253,7 +253,8 @@ Based on all the step results, provide a comprehensive final answer to the origi
         self,
         plan: ExecutionPlan,
         step: PlanStep,
-        previous_results: Dict[int, str]
+        previous_results: Dict[int, str],
+        prior_context: str = ""
     ) -> str:
         """Execute a single step of the plan."""
         # Format previous results
@@ -262,10 +263,16 @@ Based on all the step results, provide a comprehensive final answer to the origi
             for num, result in previous_results.items()
         ]) or "None yet"
         
+        # Format prior context (from previous plan attempts)
+        prior_context_str = ""
+        if prior_context:
+            prior_context_str = f"\nContext from previous plan attempt:\n{prior_context}\n"
+        
         prompt = self.EXECUTOR_PROMPT.format(
             step_number=step.step_number,
             goal=plan.goal,
             step_description=step.description,
+            prior_context=prior_context_str,
             previous_results=prev_results_str,
             tools=self._get_tools_description()
         )
@@ -393,17 +400,22 @@ Based on all the step results, provide a comprehensive final answer to the origi
         
         # Phase 2: Execute steps
         previous_results: Dict[int, str] = {}
+        prior_context = ""  # Context from completed work before replanning
         
-        for step in plan.steps:
+        # Use while loop so we can restart iteration after replanning
+        step_index = 0
+        while step_index < len(plan.steps):
+            step = plan.steps[step_index]
             step.started_at = datetime.now()
             step.status = PlanStatus.IN_PROGRESS
             
             try:
-                result = await self._execute_step(plan, step, previous_results)
+                result = await self._execute_step(plan, step, previous_results, prior_context)
                 step.result = result
                 step.status = PlanStatus.COMPLETED
                 step.completed_at = datetime.now()
                 previous_results[step.step_number] = result
+                step_index += 1  # Move to next step
                 
             except Exception as e:
                 step.error = str(e)
@@ -413,13 +425,20 @@ Based on all the step results, provide a comprehensive final answer to the origi
                 # Try replanning
                 if replan_count < self.max_replans:
                     replan_count += 1
+                    
+                    # Capture completed work BEFORE replanning to preserve context
+                    completed_work = [
+                        f"Step {s.step_number}: {s.description}\nResult: {s.result}"
+                        for s in plan.steps if s.status == PlanStatus.COMPLETED and s.result
+                    ]
+                    if completed_work:
+                        prior_context = "Previously completed work:\n" + "\n\n".join(completed_work)
+                    
                     plan = await self._replan(plan, step, str(e))
                     plan.status = PlanStatus.REPLANNED
-                    # Reset and continue with new plan
+                    # Reset step tracking for new plan (prior_context preserves old context)
                     previous_results = {}
-                    for s in plan.steps:
-                        if s.status == PlanStatus.COMPLETED:
-                            previous_results[s.step_number] = s.result or ""
+                    step_index = 0  # Restart iteration with new plan's steps
                 else:
                     plan.status = PlanStatus.FAILED
                     break
@@ -491,20 +510,24 @@ Based on all the step results, provide a comprehensive final answer to the origi
         }
         
         previous_results: Dict[int, str] = {}
+        prior_context = ""  # Context from completed work before replanning
         
-        for i, step in enumerate(plan.steps):
+        # Use while loop so we can restart iteration after replanning
+        step_index = 0
+        while step_index < len(plan.steps):
+            step = plan.steps[step_index]
             yield {
                 "type": "step_start",
                 "step_number": step.step_number,
                 "description": step.description,
-                "progress": f"{i + 1}/{len(plan.steps)}"
+                "progress": f"{step_index + 1}/{len(plan.steps)}"
             }
             
             step.started_at = datetime.now()
             step.status = PlanStatus.IN_PROGRESS
             
             try:
-                result = await self._execute_step(plan, step, previous_results)
+                result = await self._execute_step(plan, step, previous_results, prior_context)
                 step.result = result
                 step.status = PlanStatus.COMPLETED
                 step.completed_at = datetime.now()
@@ -515,6 +538,8 @@ Based on all the step results, provide a comprehensive final answer to the origi
                     "step_number": step.step_number,
                     "result": result
                 }
+                
+                step_index += 1  # Move to next step
                 
             except Exception as e:
                 step.error = str(e)
@@ -528,6 +553,14 @@ Based on all the step results, provide a comprehensive final answer to the origi
                 
                 if replan_count < self.max_replans:
                     replan_count += 1
+                    
+                    # Capture completed work BEFORE replanning to preserve context
+                    completed_work = [
+                        f"Step {s.step_number}: {s.description}\nResult: {s.result}"
+                        for s in plan.steps if s.status == PlanStatus.COMPLETED and s.result
+                    ]
+                    if completed_work:
+                        prior_context = "Previously completed work:\n" + "\n\n".join(completed_work)
                     
                     yield {
                         "type": "replanning",
@@ -547,6 +580,10 @@ Based on all the step results, provide a comprehensive final answer to the origi
                             for s in plan.steps
                         ]
                     }
+                    
+                    # Reset step tracking for new plan (prior_context preserves old context)
+                    previous_results = {}
+                    step_index = 0  # Restart iteration with new plan's steps
                 else:
                     plan.status = PlanStatus.FAILED
                     yield {

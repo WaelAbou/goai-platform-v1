@@ -63,3 +63,8 @@ chardet==5.2.0  # Text encoding detection
 # spacy==3.7.2  # Advanced NLP
 # sentence-transformers==2.2.2  # Local embeddings
 # pgvector==0.2.4  # PostgreSQL vector extension
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0

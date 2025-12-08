@@ -7,7 +7,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr, activity
+from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr, activity, evals, mcp, triggers, meeting_notes, approvals, observability, guardrails
 
 
 @asynccontextmanager
@@ -84,6 +84,13 @@ app.include_router(ebc_tickets.router, prefix="/api/v1/ebc-tickets", tags=["EBC 
 app.include_router(customer_kyc.router, prefix="/api/v1", tags=["Customer KYC"])
 app.include_router(ocr.router, prefix="/api/v1", tags=["OCR"])
 app.include_router(activity.router, prefix="/api/v1", tags=["Activity"])
+app.include_router(evals.router, prefix="/api/v1/evals", tags=["AI Evaluations"])
+app.include_router(mcp.router, prefix="/api/v1/mcp", tags=["MCP Protocol"])
+app.include_router(triggers.router, prefix="/api/v1/triggers", tags=["Triggers & Webhooks"])
+app.include_router(meeting_notes.router, prefix="/api/v1/meeting-notes", tags=["Meeting Notes"])
+app.include_router(approvals.router, prefix="/api/v1/approvals", tags=["Human-in-the-Loop"])
+app.include_router(observability.router, prefix="/api/v1/observability", tags=["Agent Observability"])
+app.include_router(guardrails.router, prefix="/api/v1/guardrails", tags=["AI Guardrails"])
 
 
 @app.get("/health")
