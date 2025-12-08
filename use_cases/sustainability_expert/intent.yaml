@@ -1,0 +1,183 @@
+# Sustainability Expert Bot - Use Case Definition
+# AI-powered sustainability advisor for organizations and individuals
+
+use_case:
+  name: "Sustainability Expert Bot"
+  id: "sustainability-expert"
+  version: "1.0.0"
+  
+  # Ownership
+  business_owner: "Sustainability & ESG Team"
+  technical_owner: "ai-platform@company.com"
+  
+  # Problem Statement
+  problem: |
+    Organizations struggle to understand and improve their environmental impact.
+    Sustainability regulations are complex and constantly evolving. Most companies
+    lack in-house expertise to calculate carbon footprints, set science-based
+    targets, or navigate ESG reporting requirements.
+    
+  # Solution
+  solution: |
+    An AI-powered sustainability expert that provides:
+    1. Real-time carbon footprint calculations with emission factors
+    2. ESG scoring and benchmarking against industry standards
+    3. Actionable recommendations tailored to industry and company size
+    4. Guidance on sustainability standards (GRI, TCFD, CDP, SBTi)
+    5. Conversational interface for complex sustainability questions
+    
+  # Target Users
+  target_users:
+    - Sustainability managers
+    - ESG reporting teams
+    - Operations managers
+    - Executive leadership
+    - Supply chain managers
+    - Individual consumers (personal carbon footprint)
+
+  # Success Metrics
+  success_metrics:
+    - metric: "Query response time"
+      baseline: "Manual research: 2-4 hours"
+      target: "< 5 seconds"
+      
+    - metric: "Carbon calculation accuracy"
+      target: "Within 10% of verified calculators"
+      
+    - metric: "User satisfaction"
+      target: "4.5/5 rating"
+      
+    - metric: "Recommendation adoption rate"
+      target: "30%+ of suggestions implemented"
+
+  # Scope Definition
+  in_scope:
+    - Carbon footprint calculation (Scope 1, 2)
+    - ESG scoring and analysis
+    - Sustainability best practices
+    - Regulatory guidance (GRI, TCFD, CDP)
+    - Industry-specific recommendations
+    - UN SDG alignment
+    - Basic Scope 3 emissions estimates
+    
+  out_of_scope:
+    - Certified carbon audits
+    - Legal compliance certification
+    - Carbon credit trading
+    - Full life cycle assessments
+    - Third-party verification
+    - Detailed Scope 3 supply chain analysis
+
+  # Platform Components Used
+  platform_components:
+    llm_router:
+      usage: "Powers conversational interface"
+      model: "gpt-4o-mini"
+      fallback: "ollama/llama3"
+      
+    rag_engine:
+      usage: "Retrieves sustainability standards and regulations"
+      documents:
+        - "GRI Standards 2021"
+        - "TCFD Recommendations"
+        - "UN SDGs"
+        - "EPA Emission Factors"
+        
+    agent_tools:
+      - name: "carbon_calculator"
+        description: "Calculate CO2e emissions for activities"
+      - name: "esg_scorer"
+        description: "Calculate ESG scores from company metrics"
+      - name: "get_recommendations"
+        description: "Get industry-specific sustainability advice"
+        
+    memory:
+      usage: "Maintain conversation context and user preferences"
+      
+    guardrails:
+      usage: "Ensure factual, responsible advice"
+      rules:
+        - "No greenwashing claims"
+        - "Cite sources for statistics"
+        - "Clarify estimation vs. certified data"
+
+  # Test Scenarios
+  test_scenarios:
+    - name: "Carbon Calculation - Flight"
+      description: "Calculate flight emissions"
+      input:
+        activity: "flight"
+        details:
+          distance_km: 5600
+          class: "economy"
+          round_trip: true
+      expected_behavior: "Return CO2e estimate with comparison metrics"
+      
+    - name: "Carbon Calculation - Office"
+      description: "Calculate office energy emissions"
+      input:
+        activity: "office_energy"
+        details:
+          electricity_kwh: 50000
+          natural_gas_therms: 1000
+      expected_behavior: "Return annual CO2e with reduction suggestions"
+      
+    - name: "ESG Score"
+      description: "Calculate company ESG score"
+      input:
+        company_data:
+          renewable_energy_percent: 40
+          waste_recycled_percent: 60
+          employee_diversity_score: 8
+          board_independence_percent: 70
+      expected_behavior: "Return E, S, G scores with overall rating"
+      
+    - name: "Conversational Q&A"
+      description: "Answer sustainability question"
+      input: "What are science-based targets and how do I set them?"
+      expected_behavior: "Explain SBTi with actionable steps"
+      
+    - name: "Industry Recommendations"
+      description: "Get industry-specific advice"
+      input:
+        industry: "technology"
+        focus_area: "data_centers"
+      expected_behavior: "Return specific recommendations for tech industry"
+
+  # Data Sources
+  data_sources:
+    emission_factors:
+      - source: "EPA GHG Emission Factors Hub"
+        url: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        update_frequency: "annual"
+        
+      - source: "UK DEFRA Conversion Factors"
+        url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023"
+        update_frequency: "annual"
+        
+    standards:
+      - "GRI Universal Standards 2021"
+      - "TCFD Recommendations 2017"
+      - "UN Sustainable Development Goals"
+      - "Science Based Targets initiative (SBTi)"
+      - "CDP Questionnaires"
+
+  # Compliance & Ethics
+  compliance:
+    - "No certification claims without verification"
+    - "Clear distinction between estimates and audited data"
+    - "Transparent about calculation methodologies"
+    - "No endorsement of specific carbon offset providers"
+    
+  # Future Roadmap
+  roadmap:
+    v1.1:
+      - "Supply chain emissions (Scope 3)"
+      - "Industry benchmarking"
+    v1.2:
+      - "Sustainability report generator"
+      - "Carbon reduction pathway planning"
+    v2.0:
+      - "IoT integration for real-time monitoring"
+      - "Multi-language support"
+
