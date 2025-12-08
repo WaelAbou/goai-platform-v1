@@ -1,0 +1,307 @@
+{
+  "company": {
+    "name": "XYZ Corporation",
+    "id": "xyz-corp-001",
+    "industry": "technology",
+    "sub_industry": "SaaS",
+    "employees": 500,
+    "revenue_usd": 75000000,
+    "fiscal_year": 2024,
+    "locations": [
+      {
+        "name": "San Francisco HQ",
+        "type": "headquarters",
+        "employees": 300,
+        "sqft": 50000,
+        "renewable_energy_percent": 100
+      },
+      {
+        "name": "Austin Office",
+        "type": "regional",
+        "employees": 120,
+        "sqft": 20000,
+        "renewable_energy_percent": 40
+      },
+      {
+        "name": "London Office",
+        "type": "regional",
+        "employees": 80,
+        "sqft": 15000,
+        "renewable_energy_percent": 0
+      }
+    ]
+  },
+  
+  "carbon_footprint": {
+    "year": 2024,
+    "total_co2e_kg": 1145768,
+    "total_co2e_tonnes": 1145.8,
+    "carbon_intensity_per_million_usd": 15.28,
+    "per_employee_kg": 2292,
+    
+    "breakdown": {
+      "business_travel": {
+        "co2e_kg": 467424,
+        "percent": 40.8,
+        "scope": 3,
+        "details": {
+          "executive_flights": {
+            "description": "SF ↔ London, Business Class",
+            "trips_per_year": 32,
+            "distance_km": 8600,
+            "co2e_kg": 239424
+          },
+          "sales_flights": {
+            "description": "Domestic Economy",
+            "trips_per_year": 200,
+            "avg_distance_km": 2500,
+            "co2e_kg": 156000
+          },
+          "conference_travel": {
+            "description": "Major conferences",
+            "events": 3,
+            "attendees": 20,
+            "co2e_kg": 72000
+          }
+        }
+      },
+      
+      "employee_commuting": {
+        "co2e_kg": 261272,
+        "percent": 22.8,
+        "scope": 3,
+        "details": {
+          "car_commuters": {
+            "employees": 150,
+            "annual_km_per_employee": 8800,
+            "vehicle_type": "car_petrol_medium",
+            "co2e_kg": 225720
+          },
+          "ev_commuters": {
+            "employees": 30,
+            "annual_km_per_employee": 8800,
+            "vehicle_type": "car_electric",
+            "co2e_kg": 13992
+          },
+          "public_transit": {
+            "employees": 70,
+            "annual_km_per_employee": 8800,
+            "mode": "train_national",
+            "co2e_kg": 21560
+          }
+        }
+      },
+      
+      "office_energy": {
+        "co2e_kg": 81090,
+        "percent": 7.1,
+        "scope": 2,
+        "details": {
+          "san_francisco": {
+            "kwh": 500000,
+            "renewable_percent": 100,
+            "co2e_kg": 0
+          },
+          "austin": {
+            "kwh": 200000,
+            "renewable_percent": 40,
+            "grid": "us_avg",
+            "co2e_kg": 50040
+          },
+          "london": {
+            "kwh": 150000,
+            "renewable_percent": 0,
+            "grid": "uk",
+            "co2e_kg": 31050
+          }
+        }
+      },
+      
+      "cloud_infrastructure": {
+        "co2e_kg": 291900,
+        "percent": 25.5,
+        "scope": 3,
+        "details": {
+          "provider": "AWS",
+          "annual_kwh": 2000000,
+          "renewable_percent": 65
+        }
+      },
+      
+      "supply_chain": {
+        "co2e_kg": 1602,
+        "percent": 0.1,
+        "scope": 3,
+        "details": {
+          "hardware_shipping": {
+            "weight_tonnes": 5,
+            "distance_km": 12000,
+            "mode": "sea_container",
+            "co2e_kg": 960
+          },
+          "marketing_materials": {
+            "weight_tonnes": 2,
+            "distance_km": 3000,
+            "mode": "road_freight",
+            "co2e_kg": 642
+          }
+        }
+      },
+      
+      "heating": {
+        "co2e_kg": 42480,
+        "percent": 3.7,
+        "scope": 1,
+        "details": {
+          "natural_gas_therms": 8000,
+          "locations": ["Austin", "London"]
+        }
+      }
+    }
+  },
+  
+  "esg_score": {
+    "assessment_date": "2024-12-08",
+    "overall_score": 74.5,
+    "rating": "A",
+    "industry_percentile": 79,
+    
+    "environmental": {
+      "score": 69.5,
+      "metrics": {
+        "renewable_energy_percent": 55,
+        "waste_recycled_percent": 72,
+        "carbon_intensity": 15,
+        "water_efficiency_score": 68,
+        "biodiversity_score": 45,
+        "pollution_score": 78
+      }
+    },
+    
+    "social": {
+      "score": 72.8,
+      "metrics": {
+        "employee_satisfaction": 82,
+        "diversity_score": 71,
+        "safety_incident_rate": 0.8,
+        "community_investment_percent": 1.5,
+        "human_rights_score": 85,
+        "customer_satisfaction": 88
+      }
+    },
+    
+    "governance": {
+      "score": 81.1,
+      "metrics": {
+        "board_independence_percent": 67,
+        "executive_pay_ratio": 85,
+        "shareholder_rights_score": 75,
+        "ethics_violations": 0,
+        "transparency_score": 82,
+        "risk_management_score": 78
+      }
+    },
+    
+    "strengths": [
+      "Environmental: Strong Waste Management (72/100)",
+      "Environmental: Strong Carbon Emissions (85/100)",
+      "Environmental: Strong Pollution Prevention (78/100)",
+      "Social: Strong Employee Welfare (82/100)",
+      "Social: Strong Diversity Inclusion (71/100)"
+    ],
+    
+    "weaknesses": [
+      "Social: Weak Community Impact (15/100)"
+    ]
+  },
+  
+  "reduction_plan": {
+    "target_year": 2025,
+    "initiatives": [
+      {
+        "name": "Green Cloud Migration",
+        "description": "Migrate to 100% renewable cloud providers",
+        "target_reduction_percent": 40,
+        "estimated_reduction_kg": 116760,
+        "timeline_months": 12,
+        "status": "planned"
+      },
+      {
+        "name": "Travel Policy Reform",
+        "description": "Reduce business travel by 30%, increase virtual meetings",
+        "target_reduction_percent": 30,
+        "estimated_reduction_kg": 140227,
+        "timeline_months": 6,
+        "status": "planned"
+      },
+      {
+        "name": "Remote Work Expansion",
+        "description": "50% reduction in commuting through flexible work",
+        "target_reduction_percent": 50,
+        "estimated_reduction_kg": 130636,
+        "timeline_months": 3,
+        "status": "planned"
+      },
+      {
+        "name": "100% Renewable Energy",
+        "description": "Transition all offices to renewable energy",
+        "target_reduction_percent": 100,
+        "estimated_reduction_kg": 81090,
+        "timeline_months": 12,
+        "status": "planned"
+      },
+      {
+        "name": "Heat Pump Installation",
+        "description": "Replace gas heating with electric heat pumps",
+        "target_reduction_percent": 70,
+        "estimated_reduction_kg": 29736,
+        "timeline_months": 18,
+        "status": "planned"
+      }
+    ],
+    
+    "projected_results": {
+      "current_emissions_kg": 1145768,
+      "projected_emissions_kg": 647319,
+      "total_reduction_kg": 498449,
+      "reduction_percent": 43.5,
+      "tree_equivalent": 23736,
+      "carbon_cost_savings_usd": 24922
+    }
+  },
+  
+  "net_zero_pathway": {
+    "base_year": 2024,
+    "base_emissions_tonnes": 1146,
+    "milestones": [
+      {"year": 2025, "target_tonnes": 647, "percent_of_base": 56},
+      {"year": 2027, "target_tonnes": 450, "percent_of_base": 39},
+      {"year": 2030, "target_tonnes": 300, "percent_of_base": 26},
+      {"year": 2035, "target_tonnes": 150, "percent_of_base": 13},
+      {"year": 2040, "target_tonnes": 0, "percent_of_base": 0}
+    ],
+    "target_year": 2040,
+    "strategy": "Science-based targets aligned with SBTi 1.5°C pathway"
+  },
+  
+  "sdg_alignment": [
+    {"sdg": 7, "name": "Affordable and Clean Energy", "relevance": "Renewable energy transition"},
+    {"sdg": 8, "name": "Decent Work and Economic Growth", "relevance": "Employee welfare initiatives"},
+    {"sdg": 9, "name": "Industry, Innovation and Infrastructure", "relevance": "Green technology adoption"},
+    {"sdg": 12, "name": "Responsible Consumption and Production", "relevance": "Waste management, e-waste"},
+    {"sdg": 13, "name": "Climate Action", "relevance": "Carbon reduction, net zero commitment"}
+  ],
+  
+  "metadata": {
+    "created_at": "2024-12-08T00:00:00Z",
+    "created_by": "Sustainability Expert Bot v1.0",
+    "data_sources": [
+      "EPA GHG Emission Factors Hub",
+      "UK DEFRA Conversion Factors 2023"
+    ],
+    "methodology": "GHG Protocol Corporate Standard",
+    "verification_status": "self-reported",
+    "next_review_date": "2025-06-08"
+  }
+}
+
