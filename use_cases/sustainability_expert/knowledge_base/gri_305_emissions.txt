@@ -1,0 +1,61 @@
+# GRI 305: Emissions 2016
+
+## Overview
+GRI 305 sets out reporting requirements on emissions to air. This Standard addresses three scopes of greenhouse gas (GHG) emissions and two types of significant air emissions.
+
+## Scope 1: Direct GHG Emissions
+Direct GHG emissions occur from sources owned or controlled by the organization. Examples include:
+- Emissions from combustion in owned or controlled boilers, furnaces, vehicles
+- Emissions from chemical production in owned or controlled process equipment
+- Company facilities (manufacturing plants, offices)
+- Company vehicles (fleet cars, trucks, aircraft)
+
+Calculation Method:
+GHG emissions = Activity data × Emission factor × GWP
+
+## Scope 2: Indirect GHG Emissions (Energy)
+Indirect GHG emissions from the generation of purchased energy consumed by the organization. This includes:
+- Purchased electricity
+- Purchased steam
+- Purchased heating
+- Purchased cooling
+
+Two methods for reporting:
+1. Location-based method: Uses average emission factors for the grid
+2. Market-based method: Uses supplier-specific emission factors
+
+## Scope 3: Other Indirect GHG Emissions
+All other indirect GHG emissions that occur in the value chain, including:
+- Upstream: Purchased goods, transportation, waste, business travel, employee commuting
+- Downstream: Distribution, use of sold products, end-of-life treatment
+
+## Key Metrics
+- 305-1: Direct (Scope 1) GHG emissions
+- 305-2: Energy indirect (Scope 2) GHG emissions
+- 305-3: Other indirect (Scope 3) GHG emissions
+- 305-4: GHG emissions intensity
+- 305-5: Reduction of GHG emissions
+- 305-6: Emissions of ozone-depleting substances (ODS)
+- 305-7: Nitrogen oxides (NOx), sulfur oxides (SOx), and other significant air emissions
+
+## Reporting Requirements
+Organizations shall report:
+- Gross direct GHG emissions in metric tons of CO2 equivalent
+- Gases included in the calculation (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3)
+- Biogenic CO2 emissions separately
+- Base year for calculation and rationale
+- Source of emission factors and GWP values
+- Consolidation approach (equity share or operational control)
+
+## Standards for Emission Factors
+- IPCC Guidelines for National Greenhouse Gas Inventories
+- EPA Emission Factors for Greenhouse Gas Inventories
+- UK DEFRA Conversion Factors
+
+## Best Practices
+1. Set science-based targets aligned with 1.5°C pathway
+2. Report using both location-based and market-based methods
+3. Include Scope 3 emissions for complete picture
+4. Get third-party verification for material emissions
+5. Disclose methodology and assumptions
+

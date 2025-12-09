@@ -1,0 +1,15 @@
+employee_id,department,location,commute_mode,distance_km_one_way,days_per_week,weeks_per_year,vehicle_type
+EMP001,Executive,San Francisco HQ,car,35,4,48,petrol_large
+EMP002,Engineering,San Francisco HQ,public_transit,15,5,48,
+EMP003,Engineering,San Francisco HQ,bike,8,5,48,
+EMP004,Engineering,San Francisco HQ,car,25,3,48,hybrid
+EMP005,Engineering,San Francisco HQ,ev,30,4,48,electric
+EMP006,Sales,San Francisco HQ,remote,0,0,48,
+EMP007,Marketing,San Francisco HQ,public_transit,20,4,48,
+EMP008,Operations,Austin Office,car,28,5,48,petrol_medium
+EMP009,Operations,Austin Office,car,22,5,48,petrol_medium
+EMP010,Support,Austin Office,car,18,4,48,petrol_small
+EMP011,Support,London Office,public_transit,12,5,48,
+EMP012,Sales,London Office,public_transit,18,4,48,
+EMP013,Marketing,London Office,bike,6,5,48,
+

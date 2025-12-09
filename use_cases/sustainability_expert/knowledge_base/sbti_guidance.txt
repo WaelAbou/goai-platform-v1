@@ -1,0 +1,93 @@
+# Science Based Targets Initiative (SBTi)
+## Setting Corporate Emissions Reduction Targets
+
+## What are Science-Based Targets?
+Science-based targets are greenhouse gas emissions reduction targets that are in line with what the latest climate science says is necessary to meet the goals of the Paris Agreement – to limit global warming to 1.5°C above pre-industrial levels.
+
+## Why Set Science-Based Targets?
+1. Future-proof growth - stay ahead of regulations
+2. Boost investor confidence - attract sustainable investment
+3. Drive innovation - spark new product development
+4. Strengthen credibility - demonstrate climate leadership
+5. Save money - reduce energy costs through efficiency
+
+## Target Setting Methods
+
+### 1. Absolute Contraction Approach
+Reduces absolute emissions by a fixed percentage annually.
+- Suitable for: All companies
+- Minimum ambition: 4.2% annual reduction for 1.5°C alignment
+
+### 2. Sectoral Decarbonization Approach (SDA)
+Based on sector-specific pathways allocating global carbon budget.
+- Suitable for: Homogeneous sectors
+- Considers sector growth projections
+
+### 3. Economic Intensity Approach
+Reduces emissions per unit of economic output.
+- Less commonly used
+- Requires minimum absolute reduction
+
+## Scope Requirements
+
+### Near-Term Targets (5-10 years)
+- Scope 1 and 2: REQUIRED for all companies
+- Scope 3: Required if >40% of total emissions
+- Minimum ambition: 1.5°C aligned (4.2% annual reduction)
+
+### Long-Term Targets (2050)
+- Net-zero commitment
+- Covers all scopes
+- Requires 90% absolute reduction
+- Maximum 10% neutralization via carbon removal
+
+## Validation Process
+
+1. **Commit**: Submit commitment letter to SBTi
+2. **Develop**: Create targets (24 months to submit)
+3. **Submit**: Send targets for validation
+4. **Communicate**: Announce validated targets
+5. **Disclose**: Report annually on progress
+
+## Target Criteria
+
+For 1.5°C Alignment:
+- Scope 1+2: 4.2% linear annual reduction (minimum)
+- Scope 3: 2.5% linear annual reduction (minimum)
+- Base year: No earlier than 2015
+- Timeframe: 5-10 years from submission
+
+## Scope 3 Categories to Include
+When Scope 3 is >40% of total emissions, include:
+- Purchased goods and services
+- Capital goods
+- Business travel
+- Employee commuting
+- Upstream transportation
+- Downstream transportation
+- Use of sold products
+- End-of-life treatment
+
+## Industry Examples
+
+### Technology Sector
+- Apple: Carbon neutral by 2030
+- Microsoft: Carbon negative by 2030
+- Google: 24/7 carbon-free energy by 2030
+
+### Manufacturing
+- Siemens: Carbon neutral operations by 2030
+- Unilever: Net zero by 2039
+
+### Finance
+- HSBC: Net zero financed emissions by 2050
+- JPMorgan: Net zero by 2050
+
+## Best Practices
+1. Start with comprehensive GHG inventory
+2. Engage suppliers on Scope 3
+3. Set interim milestones
+4. Link targets to executive compensation
+5. Report progress transparently
+6. Review and update targets as science evolves
+

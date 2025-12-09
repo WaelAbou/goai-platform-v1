@@ -1,0 +1,11 @@
+location_name,month,electricity_kwh,natural_gas_therms,renewable_percent,utility_provider,cost_usd
+San Francisco HQ,2024-01,42000,0,100,CleanPowerSF,4800
+San Francisco HQ,2024-02,38000,0,100,CleanPowerSF,4350
+San Francisco HQ,2024-03,41000,0,100,CleanPowerSF,4700
+Austin Office,2024-01,18000,650,40,Austin Energy,2800
+Austin Office,2024-02,16500,580,40,Austin Energy,2500
+Austin Office,2024-03,17200,520,40,Austin Energy,2600
+London Office,2024-01,12000,420,0,British Gas,1800
+London Office,2024-02,11500,380,0,British Gas,1700
+London Office,2024-03,12200,350,0,British Gas,1750
+

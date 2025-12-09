@@ -1,0 +1,79 @@
+# TCFD Recommendations
+## Task Force on Climate-related Financial Disclosures
+
+## Overview
+The TCFD was established by the Financial Stability Board to develop voluntary, consistent climate-related financial disclosures for companies to provide information to investors, lenders, insurers, and other stakeholders.
+
+## Four Core Elements
+
+### 1. Governance
+Disclose the organization's governance around climate-related risks and opportunities.
+
+Recommended Disclosures:
+a) Board's oversight of climate-related risks and opportunities
+b) Management's role in assessing and managing climate-related risks and opportunities
+
+Key Questions:
+- Does the board oversee climate-related issues?
+- How often is the board informed about climate issues?
+- Who is responsible for climate matters at management level?
+
+### 2. Strategy
+Disclose actual and potential impacts of climate-related risks and opportunities on the organization's businesses, strategy, and financial planning.
+
+Recommended Disclosures:
+a) Climate-related risks and opportunities identified over short, medium, and long term
+b) Impact on the organization's businesses, strategy, and financial planning
+c) Resilience of strategy under different climate scenarios (including 2°C or lower)
+
+Time Horizons:
+- Short-term: 0-1 years
+- Medium-term: 1-5 years
+- Long-term: 5-30 years
+
+### 3. Risk Management
+Disclose how the organization identifies, assesses, and manages climate-related risks.
+
+Recommended Disclosures:
+a) Processes for identifying and assessing climate-related risks
+b) Processes for managing climate-related risks
+c) Integration into overall risk management
+
+Risk Categories:
+- Physical Risks: Acute (extreme weather) and Chronic (sea level rise, temperature changes)
+- Transition Risks: Policy, Legal, Technology, Market, Reputation
+
+### 4. Metrics and Targets
+Disclose the metrics and targets used to assess and manage climate-related risks and opportunities.
+
+Recommended Disclosures:
+a) Metrics used to assess climate-related risks and opportunities
+b) Scope 1, Scope 2, and (if appropriate) Scope 3 GHG emissions
+c) Targets used to manage climate-related risks and opportunities
+
+Key Metrics:
+- GHG emissions (all three scopes)
+- Carbon intensity ratios
+- Water usage
+- Energy usage and mix
+- Revenue from low-carbon products
+
+## Scenario Analysis
+Organizations should describe the resilience of their strategy under different scenarios:
+
+1. Paris-aligned scenario (1.5°C - 2°C)
+2. Current policies scenario (3°C+)
+3. Delayed transition scenario
+
+## Implementation Guidance
+1. Start with governance structure
+2. Integrate climate into enterprise risk management
+3. Conduct scenario analysis
+4. Set measurable targets
+5. Report annually with improving disclosure quality
+
+## Sector-Specific Guidance
+TCFD provides supplemental guidance for:
+- Financial Sector (Banks, Insurance, Asset Owners, Asset Managers)
+- Non-Financial Sectors (Energy, Transportation, Materials & Buildings, Agriculture, Food, Forest Products)
+

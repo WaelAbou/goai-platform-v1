@@ -1,0 +1,11 @@
+trip_date,traveler_id,trip_type,origin,destination,distance_km,travel_class,round_trip,cost_usd,purpose
+2024-01-15,EMP001,flight,SFO,LHR,8600,business,true,4500,Client meeting
+2024-01-22,EMP002,flight,SFO,JFK,4150,economy,true,650,Conference
+2024-02-05,EMP003,flight,AUS,ORD,1500,economy,true,380,Sales visit
+2024-02-12,EMP001,flight,SFO,NRT,8300,business,true,5200,Asia expansion
+2024-02-20,EMP004,flight,LHR,FRA,650,economy,true,220,Partner meeting
+2024-03-01,EMP005,flight,SFO,LAX,540,economy,false,180,Day trip
+2024-03-08,EMP002,flight,SFO,SEA,1100,economy,true,320,Client pitch
+2024-03-15,EMP006,flight,AUS,DEN,1400,economy,true,350,Training
+2024-03-22,EMP001,flight,SFO,LHR,8600,business,true,4800,Board meeting
+
