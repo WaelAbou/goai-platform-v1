@@ -162,13 +162,18 @@ Step-back question:"""
         self.llm_router = router
 
     def set_vector_retriever(self, retriever):
-        """Set the vector retriever"""
+        """Set the vector retriever (only loads from DB once)"""
+        if self.vector_retriever is retriever:
+            return  # Already set to same retriever, skip
+        
         self.vector_retriever = retriever
-        # Load existing documents from database
-        if self.use_persistent_storage:
+        
+        # Load existing documents from database (only if not already loaded)
+        if self.use_persistent_storage and not getattr(self, '_db_loaded', False):
             result = self.load_from_database()
             if result.get("loaded", 0) > 0:
                 print(f"📚 Loaded {result['loaded']} chunks from database")
+            self._db_loaded = True
 
     def set_ingestion_engine(self, engine):
         """Set the ingestion engine"""
