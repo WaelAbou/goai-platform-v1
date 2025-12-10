@@ -1102,6 +1102,28 @@ async def dashboard_ui():
                 });
         }
         
+        // XSS Protection: Escape HTML special characters
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        // Safe attribute value (for use in HTML attributes)
+        function safeAttr(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+        
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/stats`);
@@ -1150,37 +1172,47 @@ async def dashboard_ui():
                 return;
             }
             
-            const html = items.map(item => `
-                <div class="queue-item" data-id="${item.id}">
+            const html = items.map(item => {
+                // Sanitize all user-controlled data
+                const safeId = safeAttr(item.id);
+                const safeFilename = escapeHtml(item.filename);
+                const safeUploadedBy = escapeHtml(item.uploaded_by);
+                const safeDocType = escapeHtml(formatDocType(item.document_type));
+                const safeCategory = safeAttr(item.category);
+                const safeCategoryDisplay = escapeHtml(item.category);
+                const safeConfidenceLevel = safeAttr(item.confidence_level);
+                
+                return `
+                <div class="queue-item" data-id="${safeId}">
                     <div>
                         <input type="checkbox" class="checkbox item-checkbox" 
-                               data-id="${item.id}" onchange="toggleSelect('${item.id}')">
+                               data-id="${safeId}" onchange="toggleSelect('${safeId}')">
                     </div>
                     <div class="confidence">
-                        <span class="confidence-dot ${item.confidence_level}"></span>
-                        <span>${Math.round(item.confidence * 100)}%</span>
+                        <span class="confidence-dot ${safeConfidenceLevel}"></span>
+                        <span>${Math.round(Number(item.confidence) * 100) || 0}%</span>
                     </div>
                     <div class="doc-info">
-                        <span class="doc-type">${formatDocType(item.document_type)}</span>
-                        <span class="doc-meta">${item.filename} • ${item.uploaded_by}</span>
+                        <span class="doc-type">${safeDocType}</span>
+                        <span class="doc-meta">${safeFilename} • ${safeUploadedBy}</span>
                     </div>
                     <div>
-                        <span class="category-badge ${item.category}">${item.category}</span>
+                        <span class="category-badge ${safeCategory}">${safeCategoryDisplay}</span>
                     </div>
                     <div class="emissions ${item.calculated_co2e_kg ? 'positive' : ''}">
-                        ${item.calculated_co2e_kg ? formatEmissions(item.calculated_co2e_kg) : '-'}
+                        ${item.calculated_co2e_kg ? formatEmissions(Number(item.calculated_co2e_kg)) : '-'}
                     </div>
                     <div class="doc-meta">
                         ${formatDate(item.uploaded_at)}
                     </div>
                     <div class="actions">
                         ${item.confidence >= 0.9 ? 
-                            `<button class="action-btn approve" onclick="quickApprove('${item.id}')">Approve</button>` :
-                            `<button class="action-btn review" onclick="openReview('${item.id}')">Review</button>`
+                            `<button class="action-btn approve" onclick="quickApprove('${safeId}')">Approve</button>` :
+                            `<button class="action-btn review" onclick="openReview('${safeId}')">Review</button>`
                         }
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
             
             document.getElementById('queue-body').innerHTML = html;
         }
@@ -1219,14 +1251,19 @@ async def dashboard_ui():
                 document.getElementById('modal-confidence-text').textContent = 
                     `${Math.round(item.confidence * 100)}% Confidence`;
                 
-                // Build fields
-                const fields = Object.entries(item.extracted_data).map(([key, value]) => `
+                // Build fields with XSS protection
+                const fields = Object.entries(item.extracted_data || {}).map(([key, value]) => {
+                    const safeKey = safeAttr(key);
+                    const safeKeyDisplay = escapeHtml(formatDocType(key));
+                    const safeValue = safeAttr(value ?? '');
+                    
+                    return `
                     <div class="field-row">
-                        <label class="field-label">${formatDocType(key)}</label>
+                        <label class="field-label">${safeKeyDisplay}</label>
                         <input type="text" class="field-input" 
-                               data-field="${key}" value="${value ?? ''}">
-                    </div>
-                `).join('');
+                               data-field="${safeKey}" value="${safeValue}">
+                    </div>`;
+                }).join('');
                 
                 document.getElementById('modal-fields').innerHTML = fields || 
                     '<p style="color: var(--text-secondary)">No data extracted</p>';
