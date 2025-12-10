@@ -345,6 +345,29 @@ class UnifiedSustainabilityService:
         stats['approved_count'] = status_counts.get('approved', 0) + status_counts.get('auto_approved', 0)
         stats['rejected_count'] = status_counts.get('rejected', 0)
         
+        # Queue summary (for HTML dashboard compatibility)
+        stats['queue_summary'] = {
+            'pending': status_counts.get('pending', 0),
+            'approved': status_counts.get('approved', 0),
+            'auto_approved': status_counts.get('auto_approved', 0),
+            'rejected': status_counts.get('rejected', 0),
+            'total': sum(status_counts.values())
+        }
+        
+        # Emissions totals from documents (approved only)
+        if company_id:
+            cursor.execute("""
+                SELECT SUM(calculated_co2e_kg) FROM emission_documents 
+                WHERE company_id = ? AND status IN ('approved', 'auto_approved')
+            """, (company_id,))
+        else:
+            cursor.execute("""
+                SELECT SUM(calculated_co2e_kg) FROM emission_documents 
+                WHERE status IN ('approved', 'auto_approved')
+            """)
+        
+        approved_co2e = cursor.fetchone()[0] or 0
+        
         # Emissions by scope
         if company_id:
             cursor.execute("""
@@ -361,6 +384,13 @@ class UnifiedSustainabilityService:
         }
         stats['total_emissions_kg'] = sum(stats['emissions_by_scope'].values())
         stats['total_emissions_tonnes'] = stats['total_emissions_kg'] / 1000
+        
+        # Emissions summary (for HTML dashboard compatibility)
+        stats['emissions'] = {
+            'approved_kg': approved_co2e,
+            'approved_tonnes': round(approved_co2e / 1000, 2),
+            'by_scope': stats['emissions_by_scope']
+        }
         
         # Emissions by category
         if company_id:
@@ -381,6 +411,16 @@ class UnifiedSustainabilityService:
             cursor.execute("SELECT confidence_level, COUNT(*) FROM emission_documents GROUP BY confidence_level")
         
         stats['confidence_distribution'] = dict(cursor.fetchall())
+        
+        # Activity metrics (for HTML dashboard compatibility)
+        auto_approved = status_counts.get('auto_approved', 0)
+        total_approved = stats['approved_count']
+        auto_rate = round((auto_approved / total_approved * 100), 1) if total_approved > 0 else 0
+        
+        stats['activity'] = {
+            'auto_approve_rate': auto_rate,
+            'total_reviewed': stats['approved_count'] + stats['rejected_count']
+        }
         
         conn.close()
         return stats
@@ -653,6 +693,355 @@ class UnifiedSustainabilityService:
         results = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return results
+    
+    # ==================== ANALYTICS ====================
+    
+    def get_analytics(self, time_range: str = "6months", company_id: str = None) -> Dict[str, Any]:
+        """
+        Get comprehensive analytics for dashboards.
+        
+        Returns:
+        - overview: Total documents, approval rate, avg review time, growth
+        - monthly_trends: Submissions by month
+        - category_distribution: Breakdown by document type
+        - top_contributors: Top submitters
+        - emissions_trends: CO2e over time
+        """
+        import sqlite3
+        from datetime import timedelta
+        
+        # Parse time range
+        months = {"1month": 1, "3months": 3, "6months": 6, "1year": 12}.get(time_range, 6)
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        # Calculate date cutoff
+        cutoff_date = (datetime.now() - timedelta(days=months * 30)).isoformat()
+        
+        # Base filter
+        base_filter = "uploaded_at >= ?"
+        params = [cutoff_date]
+        if company_id:
+            base_filter += " AND company_id = ?"
+            params.append(company_id)
+        
+        # 1. Overview Statistics
+        cursor.execute(f"""
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status IN ('approved', 'auto_approved') THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                AVG(confidence) as avg_confidence,
+                SUM(calculated_co2e_kg) as total_co2e
+            FROM emission_documents WHERE {base_filter}
+        """, params)
+        
+        row = cursor.fetchone()
+        total, approved, rejected, pending, avg_confidence, total_co2e = row
+        
+        overview = {
+            "total_documents": total or 0,
+            "approved": approved or 0,
+            "rejected": rejected or 0,
+            "pending": pending or 0,
+            "approval_rate": round((approved / total * 100), 1) if total else 0,
+            "avg_confidence": round((avg_confidence or 0) * 100, 1),
+            "total_co2e_kg": total_co2e or 0,
+            "total_co2e_tonnes": round((total_co2e or 0) / 1000, 2),
+        }
+        
+        # Calculate growth (compare current month to previous)
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM emission_documents 
+            WHERE strftime('%Y-%m', uploaded_at) = strftime('%Y-%m', 'now')
+            {' AND company_id = ?' if company_id else ''}
+        """, [company_id] if company_id else [])
+        current_month = cursor.fetchone()[0] or 0
+        
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM emission_documents 
+            WHERE strftime('%Y-%m', uploaded_at) = strftime('%Y-%m', 'now', '-1 month')
+            {' AND company_id = ?' if company_id else ''}
+        """, [company_id] if company_id else [])
+        prev_month = cursor.fetchone()[0] or 0
+        
+        if prev_month > 0:
+            overview["monthly_growth"] = round((current_month - prev_month) / prev_month * 100, 1)
+        else:
+            overview["monthly_growth"] = 100 if current_month > 0 else 0
+        
+        conn.close()
+        
+        return {
+            "overview": overview,
+            "monthly_trends": self.get_monthly_trends(months, company_id),
+            "category_distribution": self.get_category_distribution(company_id),
+            "top_contributors": self.get_top_contributors(10, company_id),
+            "emissions_by_scope": self._get_emissions_by_scope(company_id),
+            "time_range": time_range
+        }
+    
+    def get_monthly_trends(self, months: int = 6, company_id: str = None) -> List[Dict[str, Any]]:
+        """Get monthly submission trends."""
+        import sqlite3
+        from datetime import timedelta
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        # Get data grouped by month
+        company_filter = "AND company_id = ?" if company_id else ""
+        params = [company_id] if company_id else []
+        
+        cursor.execute(f"""
+            SELECT 
+                strftime('%Y-%m', uploaded_at) as month,
+                COUNT(*) as uploads,
+                SUM(CASE WHEN status IN ('approved', 'auto_approved') THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+                SUM(calculated_co2e_kg) as co2e_kg
+            FROM emission_documents
+            WHERE uploaded_at >= date('now', '-{months} months')
+            {company_filter}
+            GROUP BY strftime('%Y-%m', uploaded_at)
+            ORDER BY month ASC
+        """, params)
+        
+        results = []
+        month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        
+        for row in cursor.fetchall():
+            year_month, uploads, approved, rejected, co2e = row
+            month_num = int(year_month.split('-')[1])
+            results.append({
+                "month": month_names[month_num - 1],
+                "year_month": year_month,
+                "uploads": uploads or 0,
+                "approved": approved or 0,
+                "rejected": rejected or 0,
+                "co2e_kg": co2e or 0
+            })
+        
+        conn.close()
+        
+        # Ensure we have all months (fill gaps with zeros)
+        if len(results) < months:
+            all_months = []
+            for i in range(months - 1, -1, -1):
+                d = datetime.now() - timedelta(days=i * 30)
+                ym = d.strftime('%Y-%m')
+                existing = next((r for r in results if r['year_month'] == ym), None)
+                if existing:
+                    all_months.append(existing)
+                else:
+                    all_months.append({
+                        "month": month_names[d.month - 1],
+                        "year_month": ym,
+                        "uploads": 0,
+                        "approved": 0,
+                        "rejected": 0,
+                        "co2e_kg": 0
+                    })
+            results = all_months
+        
+        return results
+    
+    def get_category_distribution(self, company_id: str = None) -> List[Dict[str, Any]]:
+        """Get document category distribution."""
+        import sqlite3
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        company_filter = "WHERE company_id = ?" if company_id else ""
+        params = [company_id] if company_id else []
+        
+        # Define colors for categories
+        category_colors = {
+            "flight_receipt": {"name": "Air Travel", "color": "hsl(199, 89%, 48%)"},
+            "utility_bill": {"name": "Utilities", "color": "hsl(38, 92%, 50%)"},
+            "utility_bill_electric": {"name": "Electricity", "color": "hsl(45, 93%, 47%)"},
+            "utility_bill_gas": {"name": "Natural Gas", "color": "hsl(24, 94%, 50%)"},
+            "fuel_receipt": {"name": "Fleet Fuel", "color": "hsl(350, 84%, 60%)"},
+            "shipping_invoice": {"name": "Shipping", "color": "hsl(160, 84%, 39%)"},
+            "travel": {"name": "Travel", "color": "hsl(199, 89%, 48%)"},
+            "energy": {"name": "Energy", "color": "hsl(45, 93%, 47%)"},
+            "esg_report": {"name": "ESG Report", "color": "hsl(280, 84%, 60%)"},
+            "other": {"name": "Other", "color": "hsl(215, 20%, 55%)"},
+        }
+        
+        cursor.execute(f"""
+            SELECT document_type, COUNT(*) as count, SUM(calculated_co2e_kg) as co2e
+            FROM emission_documents
+            {company_filter}
+            GROUP BY document_type
+            ORDER BY count DESC
+        """, params)
+        
+        results = []
+        for row in cursor.fetchall():
+            doc_type, count, co2e = row
+            cat_info = category_colors.get(doc_type, {"name": doc_type or "Unknown", "color": "hsl(215, 20%, 55%)"})
+            results.append({
+                "name": cat_info["name"],
+                "document_type": doc_type,
+                "value": count,
+                "co2e_kg": co2e or 0,
+                "color": cat_info["color"]
+            })
+        
+        conn.close()
+        return results
+    
+    def get_top_contributors(self, limit: int = 10, company_id: str = None) -> List[Dict[str, Any]]:
+        """Get top document contributors."""
+        import sqlite3
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        company_filter = "WHERE company_id = ?" if company_id else ""
+        params = [company_id] if company_id else []
+        
+        cursor.execute(f"""
+            SELECT 
+                uploaded_by,
+                COUNT(*) as submissions,
+                SUM(CASE WHEN status IN ('approved', 'auto_approved') THEN 1 ELSE 0 END) as approved,
+                SUM(calculated_co2e_kg) as co2e_contributed
+            FROM emission_documents
+            {company_filter}
+            GROUP BY uploaded_by
+            ORDER BY submissions DESC
+            LIMIT ?
+        """, params + [limit])
+        
+        results = []
+        for row in cursor.fetchall():
+            user, submissions, approved, co2e = row
+            results.append({
+                "name": user or "Unknown",
+                "submissions": submissions,
+                "approved": approved or 0,
+                "approval_rate": round((approved / submissions * 100), 1) if submissions else 0,
+                "co2e_contributed": co2e or 0
+            })
+        
+        conn.close()
+        return results
+    
+    def get_emissions_analytics(self, time_range: str = "6months", company_id: str = None) -> Dict[str, Any]:
+        """Get emissions-focused analytics."""
+        import sqlite3
+        
+        months = {"1month": 1, "3months": 3, "6months": 6, "1year": 12}.get(time_range, 6)
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        company_filter = "AND company_id = ?" if company_id else ""
+        params = [company_id] if company_id else []
+        
+        # Emissions by month
+        cursor.execute(f"""
+            SELECT 
+                strftime('%Y-%m', uploaded_at) as month,
+                SUM(calculated_co2e_kg) as co2e_kg,
+                COUNT(*) as documents
+            FROM emission_documents
+            WHERE status IN ('approved', 'auto_approved')
+            AND uploaded_at >= date('now', '-{months} months')
+            {company_filter}
+            GROUP BY strftime('%Y-%m', uploaded_at)
+            ORDER BY month ASC
+        """, params)
+        
+        monthly_emissions = []
+        for row in cursor.fetchall():
+            month, co2e, docs = row
+            monthly_emissions.append({
+                "month": month,
+                "co2e_kg": co2e or 0,
+                "co2e_tonnes": round((co2e or 0) / 1000, 2),
+                "documents": docs
+            })
+        
+        # By scope
+        scope_data = self._get_emissions_by_scope(company_id)
+        
+        # By category
+        cursor.execute(f"""
+            SELECT 
+                category,
+                SUM(calculated_co2e_kg) as co2e_kg
+            FROM emission_documents
+            WHERE status IN ('approved', 'auto_approved')
+            {company_filter}
+            GROUP BY category
+            ORDER BY co2e_kg DESC
+        """, params)
+        
+        by_category = []
+        for row in cursor.fetchall():
+            cat, co2e = row
+            by_category.append({
+                "category": cat or "other",
+                "co2e_kg": co2e or 0,
+                "co2e_tonnes": round((co2e or 0) / 1000, 2)
+            })
+        
+        conn.close()
+        
+        return {
+            "monthly_emissions": monthly_emissions,
+            "by_scope": scope_data,
+            "by_category": by_category,
+            "time_range": time_range
+        }
+    
+    def _get_emissions_by_scope(self, company_id: str = None) -> Dict[str, Any]:
+        """Get emissions breakdown by scope."""
+        import sqlite3
+        
+        conn = sqlite3.connect(self.db.db_path)
+        cursor = conn.cursor()
+        
+        company_filter = "WHERE company_id = ?" if company_id else ""
+        params = [company_id] if company_id else []
+        
+        cursor.execute(f"""
+            SELECT emission_scope, SUM(co2e_kg) 
+            FROM emission_entries 
+            {company_filter}
+            GROUP BY emission_scope
+        """, params)
+        
+        scope_totals = dict(cursor.fetchall())
+        conn.close()
+        
+        return {
+            "scope_1": {
+                "kg": scope_totals.get('scope_1', 0) or 0,
+                "tonnes": round((scope_totals.get('scope_1', 0) or 0) / 1000, 2),
+                "description": "Direct emissions (fuel, fleet)"
+            },
+            "scope_2": {
+                "kg": scope_totals.get('scope_2', 0) or 0,
+                "tonnes": round((scope_totals.get('scope_2', 0) or 0) / 1000, 2),
+                "description": "Indirect emissions (electricity, heating)"
+            },
+            "scope_3": {
+                "kg": scope_totals.get('scope_3', 0) or 0,
+                "tonnes": round((scope_totals.get('scope_3', 0) or 0) / 1000, 2),
+                "description": "Value chain emissions (travel, shipping)"
+            },
+            "total": {
+                "kg": sum(v or 0 for v in scope_totals.values()),
+                "tonnes": round(sum(v or 0 for v in scope_totals.values()) / 1000, 2)
+            }
+        }
 
 
 # Singleton instance

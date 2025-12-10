@@ -7,7 +7,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr, activity, evals, mcp, triggers, meeting_notes, approvals, observability, guardrails, sustainability, review_dashboard, email_ingest
+from api.v1 import ingest, retrieve, sql_agent, orchestrator, validator, sentiment, rag, performance, telemetry, llm, stream, upload, agents, auth, export, prompts, feedback, multi_agent, memory, ebc_tickets, customer_kyc, ocr, activity, evals, mcp, triggers, meeting_notes, approvals, observability, guardrails, sustainability, review_dashboard, email_ingest, esg_companion, conversations
 
 
 @asynccontextmanager
@@ -94,6 +94,8 @@ app.include_router(guardrails.router, prefix="/api/v1/guardrails", tags=["AI Gua
 app.include_router(sustainability.router, prefix="/api/v1/sustainability", tags=["Sustainability Expert"])
 app.include_router(review_dashboard.router, prefix="/api/v1/review", tags=["Review Dashboard"])
 app.include_router(email_ingest.router, prefix="/api/v1/email", tags=["Email Integration"])
+app.include_router(esg_companion.router, prefix="/api/v1/companion", tags=["ESG Companion"])
+app.include_router(conversations.router, prefix="/api/v1/conversations", tags=["Platform Conversations"])
 
 
 @app.get("/health")

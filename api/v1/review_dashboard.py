@@ -394,6 +394,85 @@ async def get_audit_log(
     }
 
 
+# ==================== Analytics Endpoints ====================
+
+@router.get("/analytics")
+async def get_analytics(
+    time_range: str = Query("6months", description="Time range: 1month, 3months, 6months, 1year"),
+    company_id: Optional[str] = Query(None, description="Filter by company")
+):
+    """
+    📊 Get comprehensive analytics data for dashboards.
+    
+    Returns:
+    - Monthly trends (submissions, approvals, rejections)
+    - Category distribution
+    - Top contributors
+    - Review time metrics
+    - Overall statistics
+    """
+    analytics = unified_service.get_analytics(
+        time_range=time_range,
+        company_id=company_id
+    )
+    return analytics
+
+
+@router.get("/analytics/monthly")
+async def get_monthly_trends(
+    months: int = Query(6, ge=1, le=24, description="Number of months to include"),
+    company_id: Optional[str] = Query(None)
+):
+    """
+    📈 Get monthly submission trends.
+    
+    Returns uploads, approved, and rejected counts per month.
+    """
+    data = unified_service.get_monthly_trends(months=months, company_id=company_id)
+    return {"months": data}
+
+
+@router.get("/analytics/categories")
+async def get_category_distribution(
+    company_id: Optional[str] = Query(None)
+):
+    """
+    🥧 Get document category distribution.
+    
+    Returns breakdown by document type/category.
+    """
+    data = unified_service.get_category_distribution(company_id=company_id)
+    return {"categories": data}
+
+
+@router.get("/analytics/contributors")
+async def get_top_contributors(
+    limit: int = Query(10, le=50),
+    company_id: Optional[str] = Query(None)
+):
+    """
+    👥 Get top document contributors.
+    
+    Returns users ranked by submissions and approval rates.
+    """
+    data = unified_service.get_top_contributors(limit=limit, company_id=company_id)
+    return {"contributors": data}
+
+
+@router.get("/analytics/emissions")
+async def get_emissions_analytics(
+    time_range: str = Query("6months"),
+    company_id: Optional[str] = Query(None)
+):
+    """
+    🌱 Get emissions analytics.
+    
+    Returns CO2e trends and breakdowns.
+    """
+    data = unified_service.get_emissions_analytics(time_range=time_range, company_id=company_id)
+    return data
+
+
 # ==================== HTML Dashboard ====================
 
 @router.get("/", response_class=HTMLResponse)
